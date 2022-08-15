@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #ifndef COMMON_H
@@ -79,7 +79,7 @@ const char *conv_sync_type_enum_to_str(T_sync_type sync_type);
 
 const char *conv_esmc_event_type_enum_to_str(T_esmc_event_type esmc_event_type);
 
-const char *conv_api_code_to_str(E_mng_api api_code);
+const char *conv_api_code_to_str(T_mng_api api_code);
 
 int check_ql_setting(T_esmc_network_option net_opt, T_esmc_ql ql);
 

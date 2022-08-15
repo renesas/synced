@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #ifndef TYPES_H
@@ -170,6 +170,6 @@ typedef enum {
   E_mng_api_set_pri,
   E_mng_api_set_max_msg_lvl,
   E_mng_api_max
-} E_mng_api;
+} T_mng_api;
 
 #endif /* TYPES_H */

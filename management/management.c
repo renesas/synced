@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <limits.h>
@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "management.h"
+#include "pcm4l_msg.h"
 #include "../common/common.h"
 #include "../common/print.h"
 #include "../control/control.h"
@@ -69,6 +70,8 @@ typedef struct {
 #endif
 
 /* Static data */
+
+static T_esmc_ql g_current_ql = E_esmc_ql_max;
 
 #if ENABLE_EXTERNAL_MUX_CONTROL
 static T_ext_mux_entry external_mux_table[EXTERNAL_MUX_NUM] = {
@@ -119,6 +122,11 @@ static int g_management_init_flag = 0;
 static void management_template_notify_current_ql(T_esmc_ql current_ql)
 {
   /* This function is a template; the user must implement their own code here or register their own functions using management_init(). */
+
+  /* Notify pcm4l */
+  pcm4l_msg_set_clock_category(current_ql, 0);
+
+  g_current_ql = current_ql;
 
   pr_info("Current QL changed to %s (%d)", conv_ql_enum_to_str(current_ql), current_ql);
 }
@@ -259,10 +267,30 @@ static void management_template_notify_alarm(const T_alarm_data *alarm_data)
                  alarm_data->alarm_timing_loop.mac_addr[5]);
       break;
 
+    case E_alarm_type_invalid_rx_ql:
+      pr_warning("Invalid received QL on port %s", alarm_data->alarm_invalid_ql.port_name);
+      break;
+
     default:
       break;
   }
 }
+
+static void management_template_notify_pcm4l_connection_status(int on)
+{
+  /* This function is a template; the user must implement their own code here or register their own functions using management_init(). */
+
+  if(on) {
+    /* Update pcm4l with the current QL */
+    if(g_current_ql < E_esmc_ql_max) {
+      pcm4l_msg_set_clock_category(g_current_ql, 0);
+    }
+    pr_info("pcm4l connection is on");
+  } else {
+    pr_warning("pcm4l connection is off");
+  }
+}
+
 
 /* Global functions */
 
@@ -285,6 +313,7 @@ int management_init(void)
   g_management_callbacks.notify_sync_current_clk_state = &management_template_notify_sync_current_clk_state;
   g_management_callbacks.notify_sync_current_state = &management_template_notify_sync_current_state;
   g_management_callbacks.notify_alarm = &management_template_notify_alarm;
+  g_management_callbacks.notify_pcm4l_connection_status = &management_template_notify_pcm4l_connection_status;
 
   g_management_init_flag = 1;
 
@@ -362,6 +391,13 @@ void management_call_notify_alarm_cb(const T_alarm_data *alarm_data)
 
   if(g_management_callbacks.notify_alarm != NULL) {
     g_management_callbacks.notify_alarm(alarm_data);
+  }
+}
+
+void management_call_notify_pcm4l_connection_status_cb(int on)
+{
+  if(g_management_callbacks.notify_pcm4l_connection_status != NULL) {
+    g_management_callbacks.notify_pcm4l_connection_status(on);
   }
 }
 

@@ -1,5 +1,5 @@
 /**
- * @file os.h
+ * @file pcm4l_msg.h
  * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -20,26 +20,40 @@
 * Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#ifndef PCM4L_MSG_H
+#define PCM4L_MSG_H
 
-#include <pthread.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <time.h>
+#include "pcm4l_if.h"
+#include "../common/common.h"
 
-int os_mutex_init(pthread_mutex_t *mutex);
-int os_mutex_lock(pthread_mutex_t *mutex);
-int os_mutex_unlock(pthread_mutex_t *mutex);
-int os_mutex_deinit(pthread_mutex_t *mutex);
+/* pcm4l API codes */
+typedef enum {
+  E_pcm4l_api_set_clock_category = 97
+} T_pcm4l_api;
 
-unsigned long long os_get_monotonic_milliseconds(void);
+/* Physical clock categories */
+typedef enum
+{
+  E_physical_clock_category_1       = 1,
+  E_physical_clock_category_2       = 2,
+  E_physical_clock_category_3       = 3,
+  E_physical_clock_category_4       = 4,
+  E_physical_clock_category_DNU     = 5, /* Do not use */
+  E_physical_clock_category_INVALID = 6
+} T_physical_clock_category;
 
-int os_thread_create(pthread_t *thread, void *(*start_routine) (void *), void *arg);
+typedef union {
+  T_physical_clock_category clock_category;
+} T_pcm4l_api_data;
 
-int os_cond_init(pthread_cond_t *cond);
-int os_cond_timed_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, unsigned int timeout_ms, int *timeout_flag);
-int os_cond_broadcast(pthread_cond_t *cond);
-int os_cond_deinit(pthread_cond_t *cond);
+/* pcm4l message */
+typedef struct
+{
+  T_pcm4l_api api_code;
+  T_pcm4l_error_code error_code;
+  T_pcm4l_api_data data;
+} T_pcm4l_message;
 
-#endif /* OS_H */
+T_pcm4l_error_code pcm4l_msg_set_clock_category(T_esmc_ql ql, int wait_for_response);
+
+#endif  /* PCM4L_MSG_H */

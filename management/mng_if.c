@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -47,7 +47,6 @@ typedef struct {
 static int g_mng_if_fd = UNINITIALIZED_FD;
 T_mng_if_thread_data g_mng_if_thread_data;
 
-
 /* Static functions */
 
 static int create_new_connection(void)
@@ -61,7 +60,7 @@ static int create_new_connection(void)
     return UNINITIALIZED_FD;
   }
 
-  pr_info("Interface thread accepted connection %d", new_conn);
+  pr_info("Management interface thread accepted connection %d", new_conn);
 
   return new_conn;
 }
@@ -227,7 +226,7 @@ static void *mng_if_thread(void *arg)
   thread_data->thread_state = E_mng_if_thread_state_started;
 
   while(1) {
-    if(thread_data->thread_state != E_mng_if_thread_state_started) {
+    if(thread_data->thread_state == E_mng_if_thread_state_stopping) {
       if(conn_fd != UNINITIALIZED_FD) {
         close(conn_fd);
       }
@@ -255,7 +254,7 @@ static void mng_if_thread_start_wait(T_mng_if_thread_state *state)
 
   start_time_ms = os_get_monotonic_milliseconds();
 
-  while(count-- && (*(volatile T_mng_if_thread_state*)state != E_mng_if_thread_state_started)) {
+  while(count-- && (*(volatile T_mng_if_thread_state*)state == E_mng_if_thread_state_not_started)) {
     usleep(poll_interval_us);
   }
 
@@ -289,6 +288,7 @@ static void mng_if_thread_stop_wait(T_mng_if_thread_state *state)
 int mng_if_start(const char *mng_if_ip_addr, int mng_if_port_num)
 {
   struct timeval tval;
+  int reuse_addr_flag = 1;
   struct sockaddr_in cli_addr;
 
   /* Set up socket interface */
@@ -302,6 +302,11 @@ int mng_if_start(const char *mng_if_ip_addr, int mng_if_port_num)
   tval.tv_sec = 0;
   tval.tv_usec = 50000;
   if(setsockopt(g_mng_if_fd, SOL_SOCKET, SO_RCVTIMEO, (void const *)&tval, sizeof(struct timeval)) < 0) {
+    pr_err("%s: %s", __func__, strerror(errno));
+    goto err;
+  }
+
+  if(setsockopt(g_mng_if_fd, SOL_SOCKET, SO_REUSEADDR, (void const *)&reuse_addr_flag, sizeof(int)) < 0) {
     pr_err("%s: %s", __func__, strerror(errno));
     goto err;
   }

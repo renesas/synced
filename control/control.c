@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <stdlib.h>
@@ -194,6 +194,11 @@ static int control_rx_event_cb(T_esmc_adaptor_rx_event_cb_data *cb_data)
   new_ql = old_ql;
 
   switch(event_type) {
+    case E_esmc_event_type_invalid_rx_ql:
+      alarm_data.alarm_type = E_alarm_type_invalid_rx_ql;
+      alarm_data.alarm_invalid_ql.port_name = sync_entry->name;
+      management_call_notify_alarm_cb(&alarm_data);
+      break;
     case E_esmc_event_type_ql_change:
       /* QL */
       new_ql = cb_data->event_data.ql_change.new_ql;

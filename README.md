@@ -14,12 +14,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 1-0-1
-<br>Pipeline ID: 113278
-<br>Commit Hash: 8af68511
+Release Tag: 1-0-2
+<br>Pipeline ID: 118059
+<br>Commit Hash: 5a4424ad
 ***
 
-# `synce4l` 1-0-1 README
+# `synce4l` 1-0-2 README
 
 This file is a README for `synce4l`, which is an implementation of Synchronous Ethernet
 (Sync-E).
@@ -81,6 +81,7 @@ algorithm. It also manages the following TX and RX event callbacks:
   - Port link up (E_esmc_event_type_port_link_up)
   - Port link down (E_esmc_event_type_port_link_down)
 - RX events
+  - Invalid received QL (E_esmc_event_type_invalid_rx_ql)
   - QL change (E_esmc_event_type_ql_change)
   - RX timeout (E_esmc_event_type_rx_timeout)
   - Port link up (E_esmc_event_type_port_link_up)
@@ -159,7 +160,7 @@ To build `synce4l`, the user must consider the following build arguments:
 - **ESMC_STACK**; default: renesas
 - **PLATFORM**; default: amd64
 - **I2C_DRIVER**; default: rsmu
-- **IDT_CLOCKMATRIX_HOST_ADDRESS_MODE**; default: 8
+- **SERIAL_ADDRESS_MODE**; default: 8
 - **REV_ID**; default: rev-d-p
 - **SYNCE4L_DEBUG_MODE**; default: 0
 
@@ -171,7 +172,7 @@ ESMC stack, targeting a platform with arm64 architecture, employing the `RSMU` d
 using 8-bit I2C slave addressing, targeting the `Renesas Electronics Corporation
 ClockMatrix Rev-E` device, and enabling debug mode:
 
-**make synce4l ESMC_STACK=renesas PLATFORM=arm64 I2C_DRIVER=rsmu IDT_CLOCKMATRIX_HOST_ADDRESS_MODE=8
+**make synce4l ESMC_STACK=renesas PLATFORM=arm64 I2C_DRIVER=rsmu SERIAL_ADDRESS_MODE=8
 REV_ID=rev-e SYNCE4L_DEBUG_MODE=1**
 
 The Makefile also supports the **CROSS_COMPILE**, **USER_CFLAGS**, and **USER_LDFLAGS**
@@ -310,6 +311,20 @@ When parameters are not specified, their default values will be applied.
   - Wait-to-restore timer in seconds **[wtr_tmr]**
     - Default: 300
     - Range: 0-signed 16-bit integer maximum
+  - pcm4l interface enable **[pcm4l_if_en]**
+    - Default: 0 (disabled)
+    - Range: 0-1
+    - Description:
+      - If enabled, the communication path between `synce4l` and `pcm4l` will
+      be set up (set **[pcm4l_if_ip_addr]** and **[pcm4l_if_port_num]** to the appropriate
+      values). This interface is used to send the physical clock category to pcm4l
+  - pcm4l interface IP address **[pcm4l_if_ip_addr]**
+    - Default:
+    - Range:
+    - Example: 127.0.0.1
+  - pcm4l interface port number **[pcm4l_if_port_num]**
+    - Default: 2400
+    - Range: 1024-unsigned 16-bit integer maximum
   - Management interface enable **[mng_if_en]**
     - Default: 0 (disabled)
     - Range: 0-1
@@ -405,8 +420,10 @@ clock port
 - Notification for the current state of the specified Sync-E clock, Sync-E monitoring,
 or external clock port
   - **management_call_notify_sync_current_state_cb()**
-- Notification for the alarm (e.g. timing loop alarm)
+- Notification for the timing loop or invalid received QL alarm
   - **management_call_notify_alarm_cb()**
+- Notification for the pcm4l connection status change
+  - **management_call_notify_pcm4l_connection_status_cb()**
 
 Unless the user registers their own callback functions, template functions will
 be registered in their place.

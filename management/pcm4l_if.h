@@ -1,5 +1,5 @@
 /**
- * @file os.h
+ * @file pcm4l_if.h
  * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -20,26 +20,24 @@
 * Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#ifndef PCM4L_IF_H
+#define PCM4L_IF_H
 
-#include <pthread.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <time.h>
+#include "../common/common.h"
 
-int os_mutex_init(pthread_mutex_t *mutex);
-int os_mutex_lock(pthread_mutex_t *mutex);
-int os_mutex_unlock(pthread_mutex_t *mutex);
-int os_mutex_deinit(pthread_mutex_t *mutex);
+/* pcm4l error codes */
+typedef enum
+{
+  E_pcm4l_error_code_ok       = 0,
+  E_pcm4l_error_code_timeout  = 1,
+  E_pcm4l_error_code_fail     = 2,
+  E_pcm4l_error_code_not_sent = 3
+} T_pcm4l_error_code;
 
-unsigned long long os_get_monotonic_milliseconds(void);
 
-int os_thread_create(pthread_t *thread, void *(*start_routine) (void *), void *arg);
+int pcm4l_if_start(const char *pcm4l_if_ip_addr, int pcm4l_if_port_num);
+void pcm4l_if_stop(void);
 
-int os_cond_init(pthread_cond_t *cond);
-int os_cond_timed_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, unsigned int timeout_ms, int *timeout_flag);
-int os_cond_broadcast(pthread_cond_t *cond);
-int os_cond_deinit(pthread_cond_t *cond);
+T_pcm4l_error_code pcm4l_if_send(const unsigned char *req_buff, unsigned int req_len, unsigned char *rsp_buff, unsigned int rsp_len);
 
-#endif /* OS_H */
+#endif  /* PCM4L_IF_H */

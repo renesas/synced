@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #ifndef MANAGEMENT_H
@@ -43,7 +43,8 @@ typedef enum {
 typedef enum {
   E_alarm_type_invalid_clock_idx,
   E_alarm_type_invalid_sync_idx,
-  E_alarm_type_timing_loop
+  E_alarm_type_timing_loop,
+  E_alarm_type_invalid_rx_ql
 } T_alarm_type;
 
 typedef enum {
@@ -56,6 +57,10 @@ typedef struct {
   const char *port_name;
   const unsigned char *mac_addr;
 } T_alarm_data_timing_loop;
+
+typedef struct {
+  const char *port_name;
+} T_alarm_data_invalid_rx_ql;
 
 typedef struct {
   int config_pri;
@@ -122,6 +127,7 @@ typedef struct {
   T_alarm_type alarm_type;
   union {
     T_alarm_data_timing_loop alarm_timing_loop;
+    T_alarm_data_invalid_rx_ql alarm_invalid_ql;
   };
 } T_alarm_data;
 
@@ -131,6 +137,7 @@ typedef void (*T_management_synce_dpll_current_state_change_cb)(T_device_dpll_st
 typedef void (*T_management_sync_current_clk_state_change_cb)(const char *port_name, T_sync_clk_state clk_state);
 typedef void (*T_management_sync_current_state_change_cb)(const char *port_name, T_sync_state state);
 typedef void (*T_management_alarm_cb)(const T_alarm_data *alarm_data);
+typedef void (*T_management_pcm4l_connection_status_change_cb)(int on);
 
 typedef struct {
   T_management_current_ql_change_cb notify_current_ql;
@@ -139,6 +146,7 @@ typedef struct {
   T_management_sync_current_clk_state_change_cb notify_sync_current_clk_state;
   T_management_sync_current_state_change_cb notify_sync_current_state;
   T_management_alarm_cb notify_alarm;
+  T_management_pcm4l_connection_status_change_cb notify_pcm4l_connection_status;
 } T_management_callbacks;
 
 int management_init(void);
@@ -161,6 +169,8 @@ void management_call_notify_sync_current_state_cb(const char *port_name,
                                                   T_sync_state state);
 
 void management_call_notify_alarm_cb(const T_alarm_data *alarm_data);
+
+void management_call_notify_pcm4l_connection_status_cb(int on);
 
 /* Generic management APIs */
 

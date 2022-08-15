@@ -15,15 +15,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <string.h>
 
 #include "management.h"
 #include "monitor.h"
+#include "pcm4l_if.h"
 #include "../common/common.h"
 #include "../common/print.h"
 #include "../control/control.h"
@@ -56,7 +57,7 @@ int monitor_init(T_monitor_config const *monitor_config)
 
   g_monitor_data.holdover_monotonic_time_ms = 0;
   g_monitor_data.current_synce_dpll_state = E_device_dpll_state_max;
-  g_monitor_data.current_ql = monitor_config->lo_ql;
+  g_monitor_data.current_ql = E_esmc_ql_max;
   g_monitor_data.current_clk_idx = INVALID_CLK_IDX;
   g_monitor_data.current_sync_idx = INVALID_SYNC_IDX;
 

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -75,15 +75,6 @@ typedef struct {
   char name[PORT_MAX_NAME_LEN];
   T_port_num port_num;
   struct sockaddr_ll mac_addr;
-  int fd;
-
-  T_port_state state;
-} T_port_cmn_data;
-
-typedef struct {
-  char name[PORT_MAX_NAME_LEN];
-  T_port_num port_num;
-  struct sockaddr_ll mac_addr;
 
   int fd;
 
@@ -117,16 +108,16 @@ typedef struct {
 struct T_port_tx_data {
   LIST_ENTRY(tx_port) list;
 
-  T_port_cmn_data cmn_data;
+  T_port_state state;
 
-  int check_link_status;
   T_port_tx_thread_data thread_data;
 };
 
 struct T_port_rx_data {
   LIST_ENTRY(rx_port) list;
 
-  T_port_cmn_data cmn_data;
+  T_port_state state;
+
   T_port_rx_thread_data thread_data;
 };
 
@@ -325,7 +316,7 @@ static void *port_tx_thread(void *arg)
     /* Update the link status */
     if(check_link_status != 0) {
       if(port_check_link(fd, name) < 0) {
-
+        /* ESMC TX event : port link down */
         if(cmn_thread_data->port_link_down_flag == 0) {
           cmn_thread_data->port_link_down_flag = 1;
 
@@ -340,6 +331,7 @@ static void *port_tx_thread(void *arg)
         /* No need to compose and send the PDU */
         continue;
       } else if(cmn_thread_data->port_link_down_flag == 1) {
+        /* ESMC TX event : port link up */
         cmn_thread_data->port_link_down_flag = 0;
 
         pr_info("Link is up on port %s (port number: %d)", name, port_num);
@@ -452,21 +444,28 @@ static void *port_rx_thread(void *arg)
       if(cmn_thread_data->port_link_down_flag == 0) {
         if(num_bytes_rx >= ESMC_PDU_LEN) {
           if(esmc_parse_pdu(&msg, &enhanced_flag, &parsed_ql, &parsed_ext_ql_tlv_data) < 0) {
+            /* ESMC RX event: invalid QL */
             pr_err("Failed to parse ESMC PDU on port %s (port number: %d)", name, port_num);
-          } else {
 
+            memset(&cb_data, 0, sizeof(cb_data));
+            cb_data.event_type = E_esmc_event_type_invalid_rx_ql;
+            cb_data.port_num = port_num;
+
+            esmc_call_rx_cb(&cb_data);
+          } else {
             /* Check the source MAC address and the originator clock */
             if(esmc_adaptor_check_mac_addr(src_mac_addr.sll_addr) != 0) {
+              /* ESMC RX event: immediate timing loop */
               memset(&cb_data, 0, sizeof(cb_data));
               cb_data.event_type = E_esmc_event_type_immediate_timing_loop;
               cb_data.port_num = port_num;
               cb_data.event_data.timing_loop.mac_addr = src_mac_addr.sll_addr;
 
               esmc_call_rx_cb(&cb_data);
-
             } else if(enhanced_flag) {
               extract_mac_addr(parsed_ext_ql_tlv_data.originator_clock_id, originator_mac_addr);
               if(esmc_adaptor_check_mac_addr(originator_mac_addr) != 0) {
+                /* ESMC RX event: originator timing loop */
                 memset(&cb_data, 0, sizeof(cb_data));
                 cb_data.event_type = E_esmc_event_type_originator_timing_loop;
                 cb_data.port_num = port_num;
@@ -481,7 +480,7 @@ static void *port_rx_thread(void *arg)
             ql_change_flag = (parsed_ql != rx_thread_data->last_ql);
 
             if(ql_change_flag) {
-              /* QL change */
+              /* ESMC RX event: QL change */
               pr_info("QL changed to %s (%d) on port %s (port number: %d)",
                       conv_ql_enum_to_str(parsed_ql),
                       parsed_ql,
@@ -494,7 +493,7 @@ static void *port_rx_thread(void *arg)
               cb_data.event_data.ql_change.new_ql = parsed_ql;
 
               if(enhanced_flag) {
-                /* Receive extended QL TLV */
+                /* Received extended QL TLV */
 
                 /* memcmp() returns non-zero value if there is difference (i.e. change in extended QL TLV data) */
                 ext_ql_tlv_change_flag = memcmp(&parsed_ext_ql_tlv_data, &cmn_thread_data->ext_ql_tlv, sizeof(parsed_ext_ql_tlv_data));
@@ -558,7 +557,7 @@ static void *port_rx_thread(void *arg)
 
     if(port_check_link(fd, name) < 0) {
       if(cmn_thread_data->port_link_down_flag == 0) {
-        /* Port link down */
+        /* ESMC RX event: port link down */
         cmn_thread_data->port_link_down_flag = 1;
 
         pr_warning("Link went down on port %s (port number: %d)", name, port_num);
@@ -571,7 +570,7 @@ static void *port_rx_thread(void *arg)
         rx_thread_data->last_ql = E_esmc_ql_max;
       }
     } else if(cmn_thread_data->port_link_down_flag == 1) {
-      /* Port link up */
+      /* ESMC RX event: port link up */
       cmn_thread_data->port_link_down_flag = 0;
 
       pr_info("Link is up on port %s (port number: %d)", name, port_num);
@@ -586,7 +585,7 @@ static void *port_rx_thread(void *arg)
 
     if(rx_thread_data->rx_timeout_flag == 0) {
       if(os_get_monotonic_milliseconds() > rx_thread_data->rx_timeout_monotonic_time_ms) {
-        /* RX timeout */
+        /* ESMC RX event: RX timeout */
         rx_thread_data->rx_timeout_flag = 1;
 
         pr_info("RX timeout occurred (QL not received within %d seconds period) on port %s (port number: %d)",
@@ -610,40 +609,12 @@ err:
   pthread_exit(NULL);
 }
 
-static int port_create_tx_thread(T_port_tx_data *tx_p)
-{
-  strncpy(tx_p->thread_data.cmn_thread_data.name, tx_p->cmn_data.name, PORT_MAX_NAME_LEN);
-  tx_p->thread_data.cmn_thread_data.port_num = tx_p->cmn_data.port_num;
-  memcpy(&tx_p->thread_data.cmn_thread_data.mac_addr.sll_addr, tx_p->cmn_data.mac_addr.sll_addr, ETH_ALEN);
-  tx_p->thread_data.check_link_status = tx_p->check_link_status;
-  tx_p->thread_data.cmn_thread_data.fd = tx_p->cmn_data.fd;
-
-  if(os_thread_create(&tx_p->thread_data.cmn_thread_data.thread_id, port_tx_thread, &tx_p->thread_data) < 0) {
-    return -1;
-  }
-
-  return 0;
-}
-
-static int port_create_rx_thread(T_port_rx_data *rx_p)
-{
-  strncpy(rx_p->thread_data.cmn_thread_data.name, rx_p->cmn_data.name, PORT_MAX_NAME_LEN);
-  rx_p->thread_data.cmn_thread_data.port_num = rx_p->cmn_data.port_num;
-  memcpy(&rx_p->thread_data.cmn_thread_data.mac_addr.sll_addr, rx_p->cmn_data.mac_addr.sll_addr, ETH_ALEN);
-  rx_p->thread_data.cmn_thread_data.fd = rx_p->cmn_data.fd;
-
-  if(os_thread_create(&rx_p->thread_data.cmn_thread_data.thread_id, port_rx_thread, &rx_p->thread_data) < 0) {
-    return -1;
-  }
-
-  return 0;
-}
-
 /* Global functions */
 
 T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port)
 {
   T_port_tx_data *tx_p;
+  struct sockaddr_ll mac_addr;
   int fd;
 
   tx_p = calloc(1, sizeof(*tx_p));
@@ -651,23 +622,27 @@ T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port)
     return NULL;
   }
 
-  strncpy(tx_p->cmn_data.name, tx_port->name, PORT_MAX_NAME_LEN);
-  tx_p->cmn_data.port_num = tx_port->port_num;
-  memcpy(tx_p->cmn_data.mac_addr.sll_addr, tx_port->mac_addr, ETH_ALEN);
-  tx_p->check_link_status = tx_port->check_link_status;
-  fd = port_open_tx(tx_p->cmn_data.name, tx_p->cmn_data.port_num, &tx_p->cmn_data.mac_addr);
+  memset(&mac_addr, 0, sizeof(mac_addr));
+  memcpy(mac_addr.sll_addr, tx_port->mac_addr, ETH_ALEN);
+
+  fd = port_open_tx(tx_port->name, tx_port->port_num, &mac_addr);
   if(fd == UNINITIALIZED_FD) {
     port_destroy_tx(tx_p);
     return NULL;
   }
-  tx_p->cmn_data.fd = fd;
 
-  if(port_create_tx_thread(tx_p) < 0) {
+  strncpy(tx_p->thread_data.cmn_thread_data.name, tx_port->name, PORT_MAX_NAME_LEN);
+  tx_p->thread_data.cmn_thread_data.port_num = tx_port->port_num;
+  memcpy(tx_p->thread_data.cmn_thread_data.mac_addr.sll_addr, mac_addr.sll_addr, ETH_ALEN);
+  tx_p->thread_data.check_link_status = tx_port->check_link_status;
+  tx_p->thread_data.cmn_thread_data.fd = fd;
+
+  if(os_thread_create(&tx_p->thread_data.cmn_thread_data.thread_id, port_tx_thread, &tx_p->thread_data) < 0) {
     port_destroy_tx(tx_p);
     return NULL;
   }
 
-  tx_p->cmn_data.state = E_port_state_created;
+  tx_p->state = E_port_state_created;
 
   if(port_thread_start_wait(E_port_thread_type_tx, &tx_p->thread_data.cmn_thread_data) < 0) {
     port_destroy_tx(tx_p);
@@ -680,28 +655,34 @@ T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port)
 T_port_rx_data *port_create_rx(T_rx_port_info const *rx_port)
 {
   T_port_rx_data *rx_p;
+  struct sockaddr_ll mac_addr;
   int fd;
 
   rx_p = calloc(1, sizeof(*rx_p));
-  if(!rx_p)
+  if(!rx_p) {
     return NULL;
+  }
 
-  strncpy(rx_p->cmn_data.name, rx_port->name, PORT_MAX_NAME_LEN);
-  rx_p->cmn_data.port_num = rx_port->port_num;
-  memcpy(rx_p->cmn_data.mac_addr.sll_addr, rx_port->mac_addr, ETH_ALEN);
-  fd = port_open_rx(rx_p->cmn_data.name, rx_p->cmn_data.port_num, &rx_p->cmn_data.mac_addr);
+  memset(&mac_addr, 0, sizeof(mac_addr));
+  memcpy(mac_addr.sll_addr, rx_port->mac_addr, ETH_ALEN);
+
+  fd = port_open_rx(rx_port->name, rx_port->port_num, &mac_addr);
   if(fd == UNINITIALIZED_FD) {
     port_destroy_rx(rx_p);
     return NULL;
   }
-  rx_p->cmn_data.fd = fd;
 
-  if(port_create_rx_thread(rx_p) < 0) {
+  strncpy(rx_p->thread_data.cmn_thread_data.name, rx_port->name, PORT_MAX_NAME_LEN);
+  rx_p->thread_data.cmn_thread_data.port_num = rx_port->port_num;
+  memcpy(rx_p->thread_data.cmn_thread_data.mac_addr.sll_addr, mac_addr.sll_addr, ETH_ALEN);
+  rx_p->thread_data.cmn_thread_data.fd = fd;
+
+  if(os_thread_create(&rx_p->thread_data.cmn_thread_data.thread_id, port_rx_thread, &rx_p->thread_data) < 0) {
     port_destroy_rx(rx_p);
     return NULL;
   }
 
-  rx_p->cmn_data.state = E_port_state_created;
+  rx_p->state = E_port_state_created;
 
   if(port_thread_start_wait(E_port_thread_type_rx, &rx_p->thread_data.cmn_thread_data) < 0) {
     port_destroy_rx(rx_p);
@@ -713,7 +694,7 @@ T_port_rx_data *port_create_rx(T_rx_port_info const *rx_port)
 
 int port_init_tx(T_port_tx_data *tx_p)
 {
-  tx_p->cmn_data.state = E_port_state_initialized;
+  tx_p->state = E_port_state_initialized;
 
   tx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_eEEC = 1;
   tx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_EEC = 0;
@@ -723,7 +704,7 @@ int port_init_tx(T_port_tx_data *tx_p)
 
 int port_init_rx(T_port_rx_data *rx_p)
 {
-  rx_p->cmn_data.state = E_port_state_initialized;
+  rx_p->state = E_port_state_initialized;
 
   rx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_eEEC = 1;
   rx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_EEC = 0;
@@ -733,7 +714,7 @@ int port_init_rx(T_port_rx_data *rx_p)
 
 int port_check_tx(T_port_tx_data *tx_p)
 {
-  if(tx_p->cmn_data.state < E_port_state_initialized) {
+  if(tx_p->state < E_port_state_initialized) {
     goto err;
   }
 
@@ -744,14 +725,14 @@ int port_check_tx(T_port_tx_data *tx_p)
   return 0;
 
 err:
-  tx_p->cmn_data.state = E_port_state_failed;
+  tx_p->state = E_port_state_failed;
   tx_p->thread_data.cmn_thread_data.thread_state = E_port_thread_state_failed;
   return -1;
 }
 
 int port_check_rx(T_port_rx_data *rx_p)
 {
-  if(rx_p->cmn_data.state < E_port_state_initialized) {
+  if(rx_p->state < E_port_state_initialized) {
     goto err;
   }
 
@@ -762,7 +743,7 @@ int port_check_rx(T_port_rx_data *rx_p)
   return 0;
 
 err:
-  rx_p->cmn_data.state = E_port_state_failed;
+  rx_p->state = E_port_state_failed;
   rx_p->thread_data.cmn_thread_data.thread_state = E_port_thread_state_failed;
   return -1;
 }
@@ -801,7 +782,7 @@ void port_destroy_tx(T_port_tx_data *tx_p)
   port_thread_stop_wait(&tx_p->thread_data.cmn_thread_data);
   port_close_tx(tx_p->thread_data.cmn_thread_data.fd);
 
-  tx_p->cmn_data.state = E_port_state_unknown;
+  tx_p->state = E_port_state_unknown;
   tx_p->thread_data.cmn_thread_data.fd = UNINITIALIZED_FD;
 }
 
@@ -810,6 +791,6 @@ void port_destroy_rx(T_port_rx_data *rx_p)
   port_thread_stop_wait(&rx_p->thread_data.cmn_thread_data);
   port_close_rx(rx_p->thread_data.cmn_thread_data.fd);
 
-  rx_p->cmn_data.state = E_port_state_unknown;
+  rx_p->state = E_port_state_unknown;
   rx_p->thread_data.cmn_thread_data.fd = UNINITIALIZED_FD;
 }

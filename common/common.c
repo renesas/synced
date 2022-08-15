@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <stdio.h>
@@ -142,6 +142,7 @@ COMPILE_TIME_ASSERT((sizeof(g_sync_type_enum_to_str)/sizeof(g_sync_type_enum_to_
 
 /* See T_esmc_event_type in esmc_adaptor.h */
 static const char *g_esmc_event_type_enum_to_str[] = {
+  "Invalid RX QL",
   "QL change",
   "RX timeout",
   "Port link up",
@@ -264,7 +265,7 @@ const char *conv_esmc_event_type_enum_to_str(T_esmc_event_type esmc_event_type)
   return g_esmc_event_type_enum_to_str[esmc_event_type];
 }
 
-const char *conv_api_code_to_str(E_mng_api api_code)
+const char *conv_api_code_to_str(T_mng_api api_code)
 {
   if(api_code >= E_mng_api_max) {
     pr_err("Failed to convert API code enumeration to string");

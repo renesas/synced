@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -34,14 +34,32 @@
 #include "../../common/common.h"
 #include "../../common/print.h"
 
+#ifndef __linux__
+#error Linux is not defined!
+#endif
+
+#define VERSION_ID   "1.0.2"
+
 #define CLI_BUFF_SIZE   128
 
 /* Static data */
+
+static const char *g_version = VERSION_ID;
 
 static char cli_buffer[CLI_BUFF_SIZE];
 static int print_flag;
 
 /* Static functions */
+
+static void usage(char *prog_name)
+{
+  fprintf(stderr,
+          "usage: %s IP_address port_number print_flag [options]\n"
+          "options:\n"
+          "  -h Display command line options (i.e. print this message).\n"
+          "  -v Display software version.\n",
+          prog_name);
+}
 
 static void print_help(void)
 {
@@ -80,26 +98,35 @@ static void get_cli_string(void)
 
 int main(int argc, char *argv[])
 {
-  (void)argc;
   char *prog_name = strrchr(argv[0], '/') + 1;
-  E_mng_api api_code;
+  T_mng_api api_code;
   int fd;
   struct sockaddr_in server;
   T_mng_api_request_msg req_msg;
   T_mng_api_response_msg rsp_msg;
   int status;
+  int i;
 
-  printf("%s started\n", prog_name);
+  for(i = 1; i < argc; i++) {
+    if(!strcmp(argv[i], "-v")) {
+      printf("%s version: %s\n", prog_name, g_version);
+      return -1;
+    }
+  }
 
   if(argc <= 3) {
-    printf("Must provide IP address, port number, and print flag (ex: 127.0.0.2, 2400, and 1)\n");
+    printf("***Error: Must specify IP address, port number, and print flag (ex: 127.0.0.2, 2400, and 1)\n");
+    usage(prog_name);
     return -1;
   }
   fd = socket(AF_INET, SOCK_STREAM, 0);
   if(fd < 0) {
     printf("***Error: Failed to create socket\n");
+    usage(prog_name);
     return -1;
   }
+
+  printf("%s started\n", prog_name);
 
   printf("Socket created successfully (IP Address: %s, port number: %s, and print flag: %s)\n", argv[1], argv[2], argv[3]);
 
@@ -140,7 +167,13 @@ int main(int argc, char *argv[])
       continue;
     }
 
-    api_code = (E_mng_api)atoi(cli_buffer);
+    api_code = (T_mng_api)atoi(cli_buffer);
+
+    /* atoi() returns 0 if no valid conversion can be performed */
+    if(strcmp(cli_buffer, "0") && (api_code == 0)) {
+      printf("***Error: Invalid request\n");
+      continue;
+    }
 
     if(api_code >= E_mng_api_max) {
       printf("***Error: Invalid request\n");

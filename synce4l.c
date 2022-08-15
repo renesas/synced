@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -43,13 +43,14 @@
 #include "esmc/esmc_adaptor/esmc_adaptor.h"
 #include "management/management.h"
 #include "management/mng_if.h"
+#include "management/pcm4l_if.h"
 #include "monitor/monitor.h"
 
 #ifndef __linux__
 #error Linux is not defined!
 #endif
 
-#define VERSION_ID   "1.0.1"
+#define VERSION_ID   "1.0.2"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 
@@ -68,7 +69,7 @@ static int g_prog_running = 1;
 static void usage(char *prog_name)
 {
   fprintf(stderr,
-          "usage: %s [-h]\n"
+          "usage: %s [options]\n"
           "options:\n"
           "  -1 Configure ESMC to handle network option 1 clocks.\n"
           "  -2 Configure ESMC to handle network option 2 clocks.\n"
@@ -417,6 +418,7 @@ int main(int argc, char *argv[])
   int control_init_flag = 0;
   int monitor_init_flag = 0;
   int management_init_flag = 0;
+  int pcm4l_if_en = 0;
   int mng_if_en = 0;
 
   if(prog_name)
@@ -512,6 +514,7 @@ int main(int argc, char *argv[])
   /* End application because no ports were specified in configuration */
   if(STAILQ_EMPTY(&cfg->interfaces)) {
     fprintf(stderr, "No ports specified\n");
+    usage(prog_name);
     goto quick_end;
   }
 
@@ -528,7 +531,7 @@ int main(int argc, char *argv[])
     goto quick_end;
   }
 
-  pr_info("---Start synce4l---");
+  pr_info("---Started %s---", prog_name);
 
   pr_info("Opened configuration file %s", cfg_file);
 
@@ -670,7 +673,17 @@ int main(int argc, char *argv[])
     goto end;
   }
 
-  /* Start the management interface */
+  /* Start pcm4l interface */
+  pcm4l_if_en = config_get_int(cfg, "global", "pcm4l_if_en");
+  if(pcm4l_if_en == 1) {
+    if(pcm4l_if_start(config_get_string(cfg, "global", "pcm4l_if_ip_addr"),
+                      config_get_int(cfg, "global", "pcm4l_if_port_num")) < 0) {
+      pr_err("Failed to start the pcm4l interface");
+      goto end;
+    }
+  }
+
+  /* Start management interface */
   mng_if_en = config_get_int(cfg, "global", "mng_if_en");
   if(mng_if_en == 1) {
     if(mng_if_start(config_get_string(cfg, "global", "mng_if_ip_addr"),
@@ -697,6 +710,9 @@ int main(int argc, char *argv[])
 end:
   /* Stop the management interface */
   mng_if_stop();
+
+  /* Stop the pcm4l interface */
+  pcm4l_if_stop();
 
   /* Deinitialize management, monitor, control, ESMC stack, and device */
   if(management_init_flag) {
@@ -736,7 +752,7 @@ quick_end:
     config_destroy(cfg);
   }
 
-  pr_info("---End synce4l---");
+  pr_info("---Ended %s---", prog_name);
 
   return err;
 }

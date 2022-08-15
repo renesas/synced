@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #ifndef MNG_IF_H
@@ -82,7 +82,7 @@ typedef struct {
 
 /* CLI request message */
 typedef struct {
-  E_mng_api api_code;
+  T_mng_api api_code;
   union {
     T_mng_api_request_get_sync_info_list           request_get_sync_info_list;
     T_mng_api_request_get_current_status           request_get_current_status;
@@ -113,7 +113,7 @@ typedef struct {
 
 /* CLI response message */
 typedef struct {
-  E_mng_api api_code;
+  T_mng_api api_code;
   T_management_api_response response;
   union {
     T_mng_api_response_get_sync_info_list           response_get_sync_info_list;

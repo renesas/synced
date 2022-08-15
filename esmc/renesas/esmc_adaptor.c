@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-2
+* Pipeline ID: 118059
+* Commit Hash: 5a4424ad
 ********************************************************************************************************************/
 
 #include "esmc.h"
@@ -87,6 +87,9 @@ static int esmc_rx_event_cb(T_esmc_rx_event_cb_data *cb_data)
   port_num = cb_data->port_num;
 
   switch(cb_data->event_type) {
+    case E_esmc_event_type_invalid_rx_ql:
+      break;
+
     case E_esmc_event_type_ql_change:
       generic_cb_data.event_data.ql_change.new_ql = cb_data->event_data.ql_change.new_ql;
       generic_cb_data.event_data.ql_change.new_num_cascaded_eEEC = cb_data->event_data.ql_change.new_num_cascaded_eEEC;
