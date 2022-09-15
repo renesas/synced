@@ -14,12 +14,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 1-0-2
-<br>Pipeline ID: 118059
-<br>Commit Hash: 5a4424ad
+Release Tag: 1-0-3
+<br>Pipeline ID: 123302
+<br>Commit Hash: 0d4d9ea7
 ***
 
-# `synce4l` 1-0-2 README
+# `synce4l` 1-0-3 README
 
 This file is a README for `synce4l`, which is an implementation of Synchronous Ethernet
 (Sync-E).
@@ -41,6 +41,7 @@ Email at IDT-Support-sync@lm.renesas.com to get in contact about `synce4l`.
 - [3 Configuration](#3_configuration)
 - [4 Management API](#4_management_api)
 - [5 `synce4l_cli`](#5_synce4l_cli)
+- [6 `pcm4l`](#6_pcm4l)
 
 ---
 
@@ -51,7 +52,13 @@ Email at IDT-Support-sync@lm.renesas.com to get in contact about `synce4l`.
 G.781 (04/2020) standards.
 
 Accompanying `synce4l` is `synce4l_cli`, which is a command-line interface (CLI)
-that lets the user dynamically manage `synce4l`.
+that lets the user dynamically manage `synce4l`. `synce4l` interfaces with `synce4l_cli`
+via a TCP/IP socket.
+
+`synce4l` can also interface with PTP Clock Manager for Linux (`pcm4l`), a high-performance
+clock recovery solution for packet-based time/phase/frequency synchronization, which
+can be downloaded from https://www.renesas.com. `synce4l` interfaces with `pcm4l`
+via a TCP/IP socket as well.
 
 `synce4l` consists of the following modules:
 
@@ -91,7 +98,7 @@ algorithm. It also manages the following TX and RX event callbacks:
 
 The **Device** module manages the timing device (e.g. `Renesas Electronics Corporation
 ClockMatrix` device). To use a `Renesas Electronics Corporation ClockMatrix` device,
-the user must download `ClockMatrix API` from https://www.renesas.com/us/en. Once
+the user must download `ClockMatrix API` from https://www.renesas.com. Once
 downloaded, the `ClockMatrix API` folder must be copied inside the device folder,
 which is in the root directory. Once copied, the `ClockMatrix API` folder must be
 renamed to *clockmatrix-api*. This module loads the specified device configuration
@@ -295,6 +302,8 @@ When parameters are not specified, their default values will be applied.
     - Default: 0 (disabled)
     - Range: 0-1
   - Device configuration file path **[tcs_file]**
+  - I2C device name **[i2c_device_name]**
+    - Default: /dev/rsmu1
   - Sync-E DPLL index **[synce_dpll_idx]**
     - Default: 0
     - Range: 0-7
@@ -311,18 +320,16 @@ When parameters are not specified, their default values will be applied.
   - Wait-to-restore timer in seconds **[wtr_tmr]**
     - Default: 300
     - Range: 0-signed 16-bit integer maximum
-  - pcm4l interface enable **[pcm4l_if_en]**
+  - `pcm4l` interface enable **[pcm4l_if_en]**
     - Default: 0 (disabled)
     - Range: 0-1
     - Description:
       - If enabled, the communication path between `synce4l` and `pcm4l` will
       be set up (set **[pcm4l_if_ip_addr]** and **[pcm4l_if_port_num]** to the appropriate
-      values). This interface is used to send the physical clock category to pcm4l
-  - pcm4l interface IP address **[pcm4l_if_ip_addr]**
-    - Default:
-    - Range:
+      values). This interface is used to send the physical clock category to `pcm4l`
+  - `pcm4l` interface IP address **[pcm4l_if_ip_addr]**
     - Example: 127.0.0.1
-  - pcm4l interface port number **[pcm4l_if_port_num]**
+  - `pcm4l` interface port number **[pcm4l_if_port_num]**
     - Default: 2400
     - Range: 1024-unsigned 16-bit integer maximum
   - Management interface enable **[mng_if_en]**
@@ -333,8 +340,6 @@ When parameters are not specified, their default values will be applied.
       be set up (set **[mng_if_ip_addr]** and **[mng_if_port_num]** to the appropriate
       values)
   - Management interface IP address **[mng_if_ip_addr]**
-    - Default:
-    - Range:
     - Example: 127.0.0.2
   - Management interface port number **[mng_if_port_num]**
     - Default: 2400
@@ -422,7 +427,7 @@ or external clock port
   - **management_call_notify_sync_current_state_cb()**
 - Notification for the timing loop or invalid received QL alarm
   - **management_call_notify_alarm_cb()**
-- Notification for the pcm4l connection status change
+- Notification for the `pcm4l` connection status change
   - **management_call_notify_pcm4l_connection_status_cb()**
 
 Unless the user registers their own callback functions, template functions will
@@ -431,8 +436,9 @@ be registered in their place.
 <a name="5_synce4l_cli"></a>
 ## 5. `synce4l_cli`
 
-As mentioned above, `synce4l_cli` lets the user execute the generic **Management API**
-dynamically.
+As mentioned earlier, `synce4l_cli` lets the user execute the generic **Management API**
+dynamically. `synce4l` connects to `synce4l_cli` via a dedicated TCP/IP socket
+interface, whose parameters must be specified in the configuration file.
 
 `synce4l_cli` employs the following response/error codes:
 
@@ -440,3 +446,50 @@ dynamically.
 - Invalid (E_management_api_response_invalid)
 - Failed (E_management_api_response_failed)
 - Not supported (E_management_api_response_not_supported)
+
+<a name="6_pcm4l"></a>
+## 6. `pcm4l`
+
+When a change in the current QL of the device occurs, `synce4l` converts this QL
+into a physical clock category and then sends it to `pcm4l`. `synce4l` connects
+to `pcm4l` via a dedicated TCP/IP socket interface, whose parameters must be specified
+in the configuration file.
+
+The `pcm4l` interface supports the following mapping between physical clock category
+and QL values:
+
+-E_physical_clock_category_1:
+  - E_esmc_ql_net_opt_1_ePRTC
+  - E_esmc_ql_net_opt_1_PRTC
+  - E_esmc_ql_net_opt_2_ePRTC
+  - E_esmc_ql_net_opt_2_PRTC
+
+- E_physical_clock_category_2:
+  - E_esmc_ql_net_opt_1_ePRC
+  - E_esmc_ql_net_opt_1_PRC
+  - E_esmc_ql_net_opt_2_ePRC
+  - E_esmc_ql_net_opt_2_PRS
+
+- E_physical_clock_category_3:
+  - E_esmc_ql_net_opt_1_SSUA
+  - E_esmc_ql_net_opt_1_SSUB
+  - E_esmc_ql_net_opt_2_STU
+  - E_esmc_ql_net_opt_2_ST2
+  - E_esmc_ql_net_opt_2_TNC
+  - E_esmc_ql_net_opt_3_UNK
+
+- E_physical_clock_category_4:
+  - E_esmc_ql_net_opt_1_eSEC
+  - E_esmc_ql_net_opt_1_SEC
+  - E_esmc_ql_net_opt_2_ST3E
+  - E_esmc_ql_net_opt_2_eEEC
+  - E_esmc_ql_net_opt_2_ST3
+  - E_esmc_ql_net_opt_2_SMC
+  - E_esmc_ql_net_opt_2_ST4
+  - E_esmc_ql_net_opt_2_PROV
+  - E_esmc_ql_net_opt_3_SEC
+
+- E_physical_clock_category_DNU:
+  - E_esmc_ql_net_opt_1_DNU
+  - E_esmc_ql_net_opt_2_DUS
+  - E_esmc_ql_net_opt_3_INV1

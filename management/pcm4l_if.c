@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -232,7 +232,6 @@ err:
 void pcm4l_if_stop(void)
 {
   if(g_pcm4l_if_thread_data.enabled != 0) {
-    g_pcm4l_if_thread_data.thread_state = E_pcm4l_if_thread_state_stopped;
     pcm4l_if_thread_stop_wait(&g_pcm4l_if_thread_data.thread_state);
     /* Deinitialize mutex */
     os_mutex_deinit(&g_pcm4l_mutex);

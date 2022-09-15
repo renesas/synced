@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -342,7 +342,6 @@ err:
 void mng_if_stop(void)
 {
   if(g_mng_if_fd != UNINITIALIZED_FD) {
-    g_mng_if_thread_data.thread_state = E_mng_if_thread_state_stopped;
     mng_if_thread_stop_wait(&g_mng_if_thread_data.thread_state);
     pthread_cancel(g_mng_if_thread_data.thread_id);
     close(g_mng_if_fd);

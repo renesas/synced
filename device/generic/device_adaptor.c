@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <pthread.h>
@@ -73,23 +73,22 @@ static T_device_dpll_state device_get_dpll_state(int synce_dpll_idx)
 
 /* Global functions */
 
-int device_init(int synce_dpll_idx, const char *tcs_file)
+int device_init(T_device_config const *device_config)
 {
-  if(synce_dpll_idx > DEVICE_MAX_DPLL_IDX) {
+  if(device_config->synce_dpll_idx > DEVICE_MAX_DPLL_IDX) {
     pr_err("Invalid Sync-E DPLL index");
     return -1;
   }
 
   /* Initialize I2C */
-  i2c_init();
+  i2c_init(device_config->i2c_device_name);
 
   /* Register i2c_read and i2c_write functions */
 
   /* Store the SYnc-E DPLL index */
-  g_device_synce_dpll_ch_id = synce_dpll_idx;
+  g_device_synce_dpll_ch_id = device_config->synce_dpll_idx;
 
   /* Configure device */
-  (void)tcs_file;
 
   /* Initialize mutex */
   return os_mutex_init(&g_device_mutex);

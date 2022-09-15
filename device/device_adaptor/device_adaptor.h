@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #ifndef DEVICE_ADAPTOR_H
@@ -35,6 +35,12 @@ typedef enum {
 } T_device_dpll_state;
 
 typedef struct {
+  int synce_dpll_idx;
+  const char *tcs_file;
+  const char *i2c_device_name;
+} T_device_config;
+
+typedef struct {
   unsigned char frequency_offset_live_status : 1;
   unsigned char no_activity_live_status : 1;
   unsigned char loss_of_signal_live_status : 1;
@@ -50,7 +56,7 @@ typedef struct {
   T_device_clock_priority_entry *clock_priority_table;
 } T_device_clock_priority_table;
 
-int device_init(int synce_dpll_idx, const char *tcs_file);
+int device_init(T_device_config const *device_config);
 int device_get_current_clk_idx(void);
 int device_set_clock_priorities(T_device_clock_priority_table const *table);
 int device_get_reference_monitor_status(int clk_idx, T_device_clk_reference_monitor_status *ref_mon_status);

@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -50,7 +50,7 @@
 #error Linux is not defined!
 #endif
 
-#define VERSION_ID   "1.0.2"
+#define VERSION_ID   "1.0.3"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 
@@ -297,6 +297,17 @@ static int create_esmc_config(struct config *cfg, T_esmc_network_option net_opt,
   return 0;
 }
 
+static int create_device_config(struct config *cfg, T_device_config *device_config)
+{
+  device_config->tcs_file = config_get_string(cfg, "global", "tcs_file");
+  device_config->i2c_device_name = config_get_string(cfg, "global", "i2c_device_name");
+
+  device_config->synce_dpll_idx = config_get_int(cfg, "global", "synce_dpll_idx");
+  pr_info("Set Sync-E DPLL index to %d", device_config->synce_dpll_idx);
+
+  return 0;
+}
+
 static int create_control_config(struct config *cfg, T_esmc_network_option net_opt, int no_ql_en, T_esmc_ql lo_ql, T_esmc_ql do_not_use_ql, int num_syncs, T_sync_config const *sync_config, T_control_config *control_config)
 {
   control_config->net_opt = net_opt;
@@ -311,11 +322,6 @@ static int create_control_config(struct config *cfg, T_esmc_network_option net_o
   pr_info("Set LO priority to %d", control_config->lo_pri);
 
   control_config->do_not_use_ql = do_not_use_ql;
-
-  control_config->tcs_file = config_get_string(cfg, "global", "tcs_file");
-
-  control_config->synce_dpll_idx = config_get_int(cfg, "global", "synce_dpll_idx");
-  pr_info("Set Sync-E DPLL index to %d", control_config->synce_dpll_idx);
 
   control_config->hold_off_timer_ms = config_get_int(cfg, "global", "hoff_tmr");
   pr_info("Set hold-off timer to %u milliseconds", control_config->hold_off_timer_ms);
@@ -410,6 +416,7 @@ int main(int argc, char *argv[])
   T_sync_config *init_sync_config = NULL;
 
   T_esmc_config esmc_config;
+  T_device_config device_config;
   T_control_config control_config;
   T_monitor_config monitor_config;
 
@@ -616,6 +623,13 @@ int main(int argc, char *argv[])
   }
   pr_info("Created ESMC configuration");
 
+  /* Create device configuration */
+  if(create_device_config(cfg, &device_config) < 0) {
+    pr_err("Failed to create device configuration");
+    goto end;
+  }
+  pr_info("Created device configuration");
+
   /* Create control configuration */
   if(create_control_config(cfg, net_opt, no_ql_en, esmc_config.init_ql, esmc_config.do_not_use_ql, num_syncs, init_sync_config, &control_config) < 0) {
     pr_err("Failed to create control configuration");
@@ -638,7 +652,7 @@ int main(int argc, char *argv[])
     pr_err("Failed to initialize management");
     goto end;
   }
-  if(device_init(control_config.synce_dpll_idx, control_config.tcs_file) == 0) {
+  if(device_init(&device_config) == 0) {
     pr_info("Initialized Sync-E DPLL");
     device_init_flag = 1;
   } else {

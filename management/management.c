@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <limits.h>
@@ -297,7 +297,7 @@ static void management_template_notify_pcm4l_connection_status(int on)
 int management_init(void)
 {
   if(g_management_init_flag) {
-    pr_warning("Management interface already initialized");
+    pr_warning("Management module already initialized");
     return 0;
   }
 

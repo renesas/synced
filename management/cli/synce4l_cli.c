@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -38,7 +38,7 @@
 #error Linux is not defined!
 #endif
 
-#define VERSION_ID   "1.0.2"
+#define VERSION_ID   "1.0.3"
 
 #define CLI_BUFF_SIZE   128
 

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #ifndef CONTROL_H
@@ -33,8 +33,6 @@ typedef struct {
   T_esmc_ql lo_ql;
   int lo_pri;
   T_esmc_ql do_not_use_ql;
-  const char *tcs_file;
-  int synce_dpll_idx;
   unsigned int hold_off_timer_ms;       /* Milliseconds */
   unsigned int wait_to_restore_timer_s; /* Seconds */
   int num_syncs;

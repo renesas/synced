@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #include <ctype.h>
@@ -237,7 +237,8 @@ static struct config_item g_config_table[] = {
   GLOB_ITEM_INT("max_msg_lvl", PRINT_LEVEL_MAX, PRINT_LEVEL_MIN, PRINT_LEVEL_MAX),
   GLOB_ITEM_INT("stdout_en", 1, 0, 1),
   GLOB_ITEM_INT("syslog_en", 0, 0, 1),
-  GLOB_ITEM_STR("tcs_file", ""),
+  GLOB_ITEM_STR("tcs_file", NULL),
+  GLOB_ITEM_STR("i2c_device_name", "/dev/rsmu1"),
   GLOB_ITEM_INT("synce_dpll_idx", 0, 0, 7),
   GLOB_ITEM_STR("holdover_ql", "FAILED"),
   GLOB_ITEM_INT("holdover_tmr", 300, 0, INT32_MAX),                                /* Seconds */

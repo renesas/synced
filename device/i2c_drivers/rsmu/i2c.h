@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-2
-* Pipeline ID: 118059
-* Commit Hash: 5a4424ad
+* Release Tag: 1-0-3
+* Pipeline ID: 123302
+* Commit Hash: 0d4d9ea7
 ********************************************************************************************************************/
 
 #ifndef I2C_H
@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-void i2c_init(void);
+void i2c_init(const char *i2c_device_name);
 void i2c_deinit(void);
 
 uint32_t i2c_read(void *user_data,
