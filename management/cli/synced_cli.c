@@ -1,6 +1,6 @@
 /**
- * @file synce4l_cli.c
- * @brief synce4l command-line interface main program
+ * @file synced_cli.c
+ * @brief synced command-line interface main program
  * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-3
-* Pipeline ID: 123302
-* Commit Hash: 0d4d9ea7
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -38,7 +38,7 @@
 #error Linux is not defined!
 #endif
 
-#define VERSION_ID   "1.0.3"
+#define VERSION_ID   "1.0.4"
 
 #define CLI_BUFF_SIZE   128
 

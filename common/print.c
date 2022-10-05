@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-3
-* Pipeline ID: 123302
-* Commit Hash: 0d4d9ea7
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #include <stdarg.h>
@@ -84,7 +84,7 @@ void print(int level, char const *format, ...)
 
   if(g_stdout_en) {
     fp = level >= LOG_NOTICE ? stdout : stderr;
-#if (SYNCE4L_CLI_PRINT == 1)
+#if (SYNCED_CLI_PRINT == 1)
     fprintf(fp, "\t%s\n", buf);
 #else
     fprintf(fp, "%s[%lld.%03ld]: %s%s%s\n",

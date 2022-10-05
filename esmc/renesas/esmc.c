@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-3
-* Pipeline ID: 123302
-* Commit Hash: 0d4d9ea7
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -1195,7 +1195,7 @@ int esmc_parse_pdu(T_esmc_pdu *msg, int *enhanced_flag, T_esmc_ql *parsed_ql, T_
   return 0;
 }
 
-#if (SYNCE4L_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
 void esmc_print_esmc_pdu(T_esmc_pdu *msg, T_esmc_print_esmc_pdu_type type)
 {
   unsigned char *ptr = (unsigned char *)msg;

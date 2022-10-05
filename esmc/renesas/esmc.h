@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-3
-* Pipeline ID: 123302
-* Commit Hash: 0d4d9ea7
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #ifndef ESMC_H
@@ -216,7 +216,7 @@ typedef struct {
   } event_data;
 } T_esmc_rx_event_cb_data;
 
-#if (SYNCE4L_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
 typedef enum {
   E_esmc_print_esmc_pdu_type_tx,
   E_esmc_print_esmc_pdu_type_rx,
@@ -251,7 +251,7 @@ void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, unsigned long
 int esmc_compose_pdu(T_esmc_pdu *msg, T_esmc_pdu_type msg_type, unsigned char src_mac_addr[ETH_ALEN], T_port_ext_ql_tlv_data const *best_ext_ql_tlv_data, T_port_num port_num, T_esmc_ql *composed_ql);
 int esmc_parse_pdu(T_esmc_pdu *msg, int *enhanced_flag, T_esmc_ql *parsed_ql, T_port_ext_ql_tlv_data *parsed_ext_ql_tlv_data);
 
-#if (SYNCE4L_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
 void esmc_print_esmc_pdu(T_esmc_pdu *msg, T_esmc_print_esmc_pdu_type type);
 #endif
 

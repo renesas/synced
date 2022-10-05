@@ -15,9 +15,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #####################################################################################################################
 #####################################################################################################################
-# Release Tag: 1-0-3
-# Pipeline ID: 123302
-# Commit Hash: 0d4d9ea7
+# Release Tag: 1-0-4
+# Pipeline ID: 125967
+# Commit Hash: 97f7354c
 #####################################################################################################################
 
 ###################
@@ -92,10 +92,10 @@ $(warning Setting REV_ID to $(REV_ID) (default)...)
 endif
 endif # <<<< End ClockMatrix definitions
 
-ifndef SYNCE4L_DEBUG_MODE
-$(warning SYNCE4L_DEBUG_MODE is not defined (SYNCE4L_DEBUG_MODE must be either 0 or 1))
-SYNCE4L_DEBUG_MODE := 0
-$(warning Setting SYNCE4L_DEBUG_MODE to $(SYNCE4L_DEBUG_MODE) (default)...)
+ifndef SYNCED_DEBUG_MODE
+$(warning SYNCED_DEBUG_MODE is not defined (SYNCED_DEBUG_MODE must be either 0 or 1))
+SYNCED_DEBUG_MODE := 0
+$(warning Setting SYNCED_DEBUG_MODE to $(SYNCED_DEBUG_MODE) (default)...)
 endif
 
 PROJ_DIR  := .
@@ -145,7 +145,7 @@ MANAGEMENT_SRC_FILES := $(shell find $(MANAGEMENT_DIR) -maxdepth 1 -name "*.c")
 MONITOR_DIR       := monitor
 MONITOR_SRC_FILES := $(shell find $(MONITOR_DIR) -name "*.c")
 
-SYNCE4L_FILE := synce4l.c
+SYNCED_FILE := synced.c
 
 INCS := \
 	$(PROJ_DIR) \
@@ -162,7 +162,7 @@ INCS := \
 PREFIXED_INCS := $(addprefix -I,$(INCS))
 
 DEFINES := \
-	SYNCE4L_DEBUG_MODE=$(SYNCE4L_DEBUG_MODE) \
+	SYNCED_DEBUG_MODE=$(SYNCED_DEBUG_MODE) \
 	'DEVICE_DRIVER_PATH(filename)=<$(CLOCKMATRIX_API_INC_DIR)/filename>' \
 	'DEVICE_I2C_DRIVER_PATH(filename)=<$(I2C_DRIVER_DIR)/filename>' \
 	SERIAL_ADDRESS_MODE=$(SERIAL_ADDRESS_MODE) \
@@ -178,28 +178,28 @@ SRC_FILES := \
 	$(ESMC_STACK_SRC_FILES) \
 	$(MANAGEMENT_SRC_FILES) \
 	$(MONITOR_SRC_FILES) \
-	$(SYNCE4L_FILE)
+	$(SYNCED_FILE)
 
 OBJS := $(patsubst %.c,%.o,$(SRC_FILES))
 OBJS := $(addprefix $(OBJ_DIR)/,$(OBJS))
 
-SYNCE4L := $(BIN_DIR)/synce4l
+SYNCED := $(BIN_DIR)/synced
 
-SYNCE4L_CLI_OBJ_DIR := $(OBJ_DIR)/management/cli
+SYNCED_CLI_OBJ_DIR := $(OBJ_DIR)/management/cli
 
-SYNCE4L_CLI_DEFINES := \
-	SYNCE4L_CLI_PRINT=1
+SYNCED_CLI_DEFINES := \
+	SYNCED_CLI_PRINT=1
 
-SYNCE4L_CLI_PREFIXED_DEFINES := $(addprefix -D,$(SYNCE4L_CLI_DEFINES))
+SYNCED_CLI_PREFIXED_DEFINES := $(addprefix -D,$(SYNCED_CLI_DEFINES))
 
-SYNCE4L_CLI_FILE := synce4l_cli.c
+SYNCED_CLI_FILE := synced_cli.c
 
-SYNCE4L_CLI_SRC_FILES := $(SYNCE4L_CLI_FILE) $(COMMON_DIR)/common.c $(COMMON_DIR)/print.c
+SYNCED_CLI_SRC_FILES := $(SYNCED_CLI_FILE) $(COMMON_DIR)/common.c $(COMMON_DIR)/print.c
 
-SYNCE4L_CLI_OBJS := $(patsubst %.c,%.o,$(SYNCE4L_CLI_SRC_FILES))
-SYNCE4L_CLI_OBJS := $(addprefix $(SYNCE4L_CLI_OBJ_DIR)/,$(SYNCE4L_CLI_OBJS))
+SYNCED_CLI_OBJS := $(patsubst %.c,%.o,$(SYNCED_CLI_SRC_FILES))
+SYNCED_CLI_OBJS := $(addprefix $(SYNCED_CLI_OBJ_DIR)/,$(SYNCED_CLI_OBJS))
 
-SYNCE4L_CLI := $(BIN_DIR)/synce4l_cli
+SYNCED_CLI := $(BIN_DIR)/synced_cli
 
 CC := $(CROSS_COMPILE)gcc
 
@@ -228,8 +228,8 @@ ifdef USER_LDFLAGS
 override LDFLAGS += $(USER_LDFLAGS)
 endif
 
-SYNCE4L_CLI_CFLAGS := \
-	$(SYNCE4L_CLI_PREFIXED_DEFINES) \
+SYNCED_CLI_CFLAGS := \
+	$(SYNCED_CLI_PREFIXED_DEFINES) \
 	-Wall \
 	-Werror \
 	-Wpedantic \
@@ -243,7 +243,7 @@ SYNCE4L_CLI_CFLAGS := \
 
 # Target: all
 .PHONY: all
-all: clean synce4l synce4l-cli
+all: clean synced synced-cli
 
 # Target: clean
 .PHONY: clean
@@ -253,18 +253,18 @@ clean:
 	@echo "# C L E A N I N G   B U I L D   A R T I F A C T S"
 	@echo "#"
 	@echo "#################################################"
-	$(RM) -r $(SYNCE4L)
-	$(RM) -r $(SYNCE4L_CLI)
+	$(RM) -r $(SYNCED)
+	$(RM) -r $(SYNCED_CLI)
 	$(RM) -rf $(OBJ_DIR)
-	$(RM) -rf $(SYNCE4L_CLI_OBJ_DIR)
+	$(RM) -rf $(SYNCED_CLI_OBJ_DIR)
 	$(RM) -rf $(PKG_DIR)
 
-# Target: synce4l
-.PHONY: synce4l
-synce4l: synce4l-header create-dirs $(SYNCE4L)
+# Target: synced
+.PHONY: synced
+synced: synced-header create-dirs $(SYNCED)
 
-.PHONY: synce4l-header
-synce4l-header:
+.PHONY: synced-header
+synced-header:
 	@echo "#################################"
 	@echo "#"
 	@echo "# B U I L D I N G   S Y N C E 4 L"
@@ -279,13 +279,13 @@ ifeq ($(DEVICE),cm) # >>>> Start ClockMatrix definitions
 	@echo "IDT_CLOCKMATRIX_HOST_ADDRESS_MODE: $(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE)"
 	@echo "REV_ID: $(REV_ID)"
 endif # <<<< End ClockMatrix definitions
-	@echo "SYNCE4L_DEBUG_MODE: $(SYNCE4L_DEBUG_MODE)"
+	@echo "SYNCED_DEBUG_MODE: $(SYNCED_DEBUG_MODE)"
 
 .PHONY: create-dirs
 create-dirs:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
-	mkdir -p $(SYNCE4L_CLI_OBJ_DIR)
+	mkdir -p $(SYNCED_CLI_OBJ_DIR)
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
@@ -295,33 +295,33 @@ $(OBJ_DIR)/%.o: %.c
 		-o $@ \
 		-c $^
 
-$(SYNCE4L): $(OBJS)
+$(SYNCED): $(OBJS)
 	$(CC) \
 		-o $@ \
 		$^ \
 		$(LDFLAGS)
 
-# Target: synce4l-cli
-.PHONY: synce4l-cli
-synce4l-cli: synce4l-cli-header create-dirs $(SYNCE4L_CLI)
+# Target: synced-cli
+.PHONY: synced-cli
+synced-cli: synced-cli-header create-dirs $(SYNCED_CLI)
 
-.PHONY: synce4l-cli-header
-synce4l-cli-header:
+.PHONY: synced-cli-header
+synced-cli-header:
 	@echo "#########################################"
 	@echo "#"
 	@echo "# B U I L D I N G   S Y N C E 4 L   C L I"
 	@echo "#"
 	@echo "#########################################"
 
-$(SYNCE4L_CLI_OBJ_DIR)/%.o: %.c
+$(SYNCED_CLI_OBJ_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) \
 		$(PREFIXED_INCS) \
-		$(SYNCE4L_CLI_CFLAGS) \
+		$(SYNCED_CLI_CFLAGS) \
 		-o $@ \
 		-c $^
 
-$(SYNCE4L_CLI): $(SYNCE4L_CLI_OBJS)
+$(SYNCED_CLI): $(SYNCED_CLI_OBJS)
 	$(CC) \
 		-o $@ \
 		$^
@@ -334,20 +334,20 @@ help:
 	@echo "# S Y N C E 4 L   M A K E F I L E   H E L P"
 	@echo "#"
 	@echo "###########################################"
-	@echo "Makefile for synce4l program"
+	@echo "Makefile for synced program"
 	@echo "  Makefile targets:"
-	@echo "    all            - Clean build artifacts, build synce4l binary executable, and build synce4l-cli binary executable"
+	@echo "    all            - Clean build artifacts, build synced binary executable, and build synced_cli binary executable"
 	@echo "    clean          - Clean build artifacts"
 	@echo "    help           - Display Makefile commands"
-	@echo "    synce4l        - Build synce4l binary executable"
-	@echo "    synce4l-cli    - Build synce4l-cli binary executable"
+	@echo "    synced         - Build synced binary executable"
+	@echo "    synced_cli     - Build synced_cli binary executable"
 	@echo "  Makefile command line variables:"
 	@echo "    CROSS_COMPILE  - Cross-compiler"
 	@echo "                       e.g. Compile for ARM64: CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-"
 	@echo "    USER_CFLAGS    - User-defined compiler flag(s)"
 	@echo "                       e.g. Compile with C99 standard: USER_CFLAGS=-std=c99"
-	@echo "                       e.g. Enable debug mode: USER_CFLAGS=-DSYNCE4L_DEBUG_MODE"
-	@echo "                       e.g. Compile with C99 standard and enable debug mode: USER_CFLAGS=\"-std=c99 -DSYNCE4L_DEBUG_MODE\""
+	@echo "                       e.g. Enable debug mode: USER_CFLAGS=-DSYNCED_DEBUG_MODE"
+	@echo "                       e.g. Compile with C99 standard and enable debug mode: USER_CFLAGS=\"-std=c99 -DSYNCED_DEBUG_MODE\""
 	@echo "    USER_LDFLAGS   - User-defined linker flag(s)"
 	@echo "                       e.g. Link C math library: USER_LDFLAGS=-lm"
 	@echo "                       e.g. Link C thread library: USER_LDFLAGS=-lpthread"

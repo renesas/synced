@@ -1,6 +1,6 @@
 /**
- * @file synce4l.c
- * @brief synce4l main program
+ * @file synced.c
+ * @brief synced main program
  * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-3
-* Pipeline ID: 123302
-* Commit Hash: 0d4d9ea7
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -50,7 +50,7 @@
 #error Linux is not defined!
 #endif
 
-#define VERSION_ID   "1.0.3"
+#define VERSION_ID   "1.0.4"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 
@@ -434,7 +434,7 @@ int main(int argc, char *argv[])
     prog_name = argv[0];
 
 /* Debug */
-#if (SYNCE4L_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
   printf("Enabled debug mode\n");
 #endif
 

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-1
-* Pipeline ID: 113278
-* Commit Hash: 8af68511
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #include <pthread.h>
@@ -25,6 +25,7 @@
 #include "device_adaptor.h"
 #include "../../common/os.h"
 #include "../../common/print.h"
+#include "../../common/types.h"
 
 #include DEVICE_DRIVER_PATH(idt_clockmatrix_register_commons.h)
 #include DEVICE_DRIVER_PATH(idt_clockmatrix_api/idt_clockmatrix_api.h)
@@ -56,22 +57,22 @@ static const DEV_driver_t g_device_driver = {
 
 /* Global functions */
 
-int device_init(int synce_dpll_idx, const char *tcs_file)
+int device_init(T_device_config const *device_config)
 {
-  if(synce_dpll_idx > CM_MAX_DPLL_IDX) {
+  if(device_config->synce_dpll_idx > CM_MAX_DPLL_IDX) {
     pr_err("Invalid Sync-E DPLL index");
     return -1;
   }
 
   /* Initialize I2C */
-  i2c_init();
+  i2c_init(device_config->i2c_device_name);
 
   /* Register I2C read/write functions */
   if(PLL_init(0, 1, &g_device_driver, NULL) != IDT_EOK) {
     return -1;
   }
 
-#if (SYNCE4L_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
   /* SCSR_RESET_CTRL.SCSR_BOOT_CMD */
   idt_clockmatrix_writeRegisterWord_32(0x2010C00C, 0x80000300);
   /* MISC_CTRL.BLOCK_RESET_AND_CG_ENABLE */
@@ -80,10 +81,12 @@ int device_init(int synce_dpll_idx, const char *tcs_file)
   idt_clockmatrix_writeRegisterWord_8(0x2010818F, 0x03);
 #endif
 
-  g_device_synce_dpll_ch_id = (Channel_id_t)synce_dpll_idx;
+  g_device_synce_dpll_ch_id = (Channel_id_t)device_config->synce_dpll_idx;
 
   /* Configure device */
-  PLL_reg_static_config(tcs_file);
+  if(device_config->tcs_file != NULL) {
+    PLL_reg_static_config(device_config->tcs_file);
+  }
 
   /* Initialize mutex */
   return os_mutex_init(&g_device_mutex);

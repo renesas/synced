@@ -14,23 +14,23 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 1-0-3
-<br>Pipeline ID: 123302
-<br>Commit Hash: 0d4d9ea7
+Release Tag: 1-0-4
+<br>Pipeline ID: 125967
+<br>Commit Hash: 97f7354c
 ***
 
-# `synce4l` 1-0-3 README
+# `synced` 1-0-4 README
 
-This file is a README for `synce4l`, which is an implementation of Synchronous Ethernet
+This file is a README for `synced`, which is an implementation of Synchronous Ethernet
 (Sync-E).
 <br>It is written in Markdown, so it is best viewed when using a Markdown-compatible
 editor.
 
-`synce4l` is copyrighted by Renesas Electronics Corporation and is licensed under
+`synced` is copyrighted by Renesas Electronics Corporation and is licensed under
 the GNU General Public License.
 <br>See the file COPYING for the license terms.
 
-Email at IDT-Support-sync@lm.renesas.com to get in contact about `synce4l`.
+Email at IDT-Support-sync@lm.renesas.com to get in contact about `synced`.
 
 ---
 
@@ -40,7 +40,7 @@ Email at IDT-Support-sync@lm.renesas.com to get in contact about `synce4l`.
 - [2 Makefile](#2_makefile)
 - [3 Configuration](#3_configuration)
 - [4 Management API](#4_management_api)
-- [5 `synce4l_cli`](#5_synce4l_cli)
+- [5 `synced_cli`](#5_synced_cli)
 - [6 `pcm4l`](#6_pcm4l)
 
 ---
@@ -48,19 +48,19 @@ Email at IDT-Support-sync@lm.renesas.com to get in contact about `synce4l`.
 <a name="1_overview"></a>
 ## 1. Overview
 
-`synce4l` facilitates Sync-E, according to the ITU-T G.8264 (03/2018) and ITU-T
+`synced` facilitates Sync-E, according to the ITU-T G.8264 (03/2018) and ITU-T
 G.781 (04/2020) standards.
 
-Accompanying `synce4l` is `synce4l_cli`, which is a command-line interface (CLI)
-that lets the user dynamically manage `synce4l`. `synce4l` interfaces with `synce4l_cli`
+Accompanying `synced` is `synced_cli`, which is a command-line interface (CLI)
+that lets the user dynamically manage `synced`. `synced` interfaces with `synced_cli`
 via a TCP/IP socket.
 
-`synce4l` can also interface with PTP Clock Manager for Linux (`pcm4l`), a high-performance
+`synced` can also interface with PTP Clock Manager for Linux (`pcm4l`), a high-performance
 clock recovery solution for packet-based time/phase/frequency synchronization, which
-can be downloaded from https://www.renesas.com. `synce4l` interfaces with `pcm4l`
+can be downloaded from https://www.renesas.com. `synced` interfaces with `pcm4l`
 via a TCP/IP socket as well.
 
-`synce4l` consists of the following modules:
+`synced` consists of the following modules:
 
 - **Configuration**
 - **Control**
@@ -69,7 +69,7 @@ via a TCP/IP socket as well.
 - **Management**
 - **Monitor**
 
-`synce4l` defines four types of ports:
+`synced` defines four types of ports:
 
 1. **Sync-E Clock**
 2. **Sync-E Monitoring**
@@ -78,7 +78,7 @@ via a TCP/IP socket as well.
 
 ### Modules
 
-The **Configuration** module enables static configuration of `synce4l` by loading
+The **Configuration** module enables static configuration of `synced` by loading
 a configuration file.
 
 The **Control** module selects the best Sync-E clock for the device through a selection
@@ -97,12 +97,11 @@ algorithm. It also manages the following TX and RX event callbacks:
   - Originator clock timing loop (E_esmc_event_type_originator_timing_loop)
 
 The **Device** module manages the timing device (e.g. `Renesas Electronics Corporation
-ClockMatrix` device). To use a `Renesas Electronics Corporation ClockMatrix` device,
-the user must download `ClockMatrix API` from https://www.renesas.com. Once
-downloaded, the `ClockMatrix API` folder must be copied inside the device folder,
-which is in the root directory. Once copied, the `ClockMatrix API` folder must be
-renamed to *clockmatrix-api*. This module loads the specified device configuration
-file. `synce4l` supports a single device (i.e. a single DPLL).
+ClockMatrix` device) and supports a single DPLL. To use a `Renesas Electronics
+Corporation ClockMatrix` device, the user must download the `ClockMatrix API` package
+from https://www.renesas.com. Once downloaded, the contents of the `ClockMatrix API`
+package must be copied to the `device/cm/clockmatrix-api` folder, which is empty.
+This module also loads the specified device configuration file.
 
 The **ESMC** module implements the ESMC protocol at the stack level. ESMC protocol
 data units (PDUs) containing quality levels (QLs) are transmitted and received by
@@ -111,7 +110,7 @@ to advertise the current QL of the device, except for the current best port whic
 advertises the QL-DNU and QL-DUS for network options 1 and 2, respectively.
 
 The **Management** module contains **Management API**. In addition to Sync-E clocks,
-`synce4l` supports external clocks like GPS, which can be managed by the said APIs.
+`synced` supports external clocks like GPS, which can be managed by the said APIs.
 
 The **Monitor** module keeps track of the current QL, current Sync-E DPLL state,
 and current clock. It also operates the holdover timer.
@@ -137,7 +136,7 @@ number parameter (i.e. no other parameters should be configured).
 
 ### Other
 
-`synce4l` supports a mode called **No QL Mode**. If enabled, the selection process
+`synced` supports a mode called **No QL Mode**. If enabled, the selection process
 is based on priority. However, only valid clocks participate in the selection, meaning
 if a **Sync-E Clock** port has a port link down or RX timeout condition, then it
 will be excluded from selection process regardless of its assigned priority.
@@ -146,7 +145,7 @@ When there are no valid Sync-E clocks, the device selects the local oscillator (
 as the best clock. In this case, the current will be equal to the configured LO
 QL.
 
-`synce4l` provides a timer called **Holdover Timer** to facilitate a gradual transition
+`synced` provides a timer called **Holdover Timer** to facilitate a gradual transition
 from the superior QL associated with a valid Sync-E clock to the QL of the LO, when
 the aforementioned Sync-E clock becomes invalid.
 
@@ -155,32 +154,32 @@ the aforementioned Sync-E clock becomes invalid.
 
 Makefile commands can only be executed while in the root directory.
 
-- Enter **make all** to clean the existing build artifacts and build `synce4l` and
-`synce4l_cli`.
-- Enter **make clean** to clean the existing `synce4l` and `synce4l_cli` build artifacts.
+- Enter **make all** to clean the existing build artifacts and build `synced` and
+`synced_cli`.
+- Enter **make clean** to clean the existing `synced` and `synced_cli` build artifacts.
 - Enter **make help** to display the available Makefile commands.
-- Enter **make synce4l** to build the `synce4l` binary executable only.
-- Enter **make synce4l_cli** to build `synce4l_cli` binary executable only.
+- Enter **make synced** to build the `synced` binary executable only.
+- Enter **make synced_cli** to build `synced_cli` binary executable only.
 
-To build `synce4l`, the user must consider the following build arguments:
+To build `synced`, the user must consider the following build arguments:
 
 - **ESMC_STACK**; default: renesas
 - **PLATFORM**; default: amd64
 - **I2C_DRIVER**; default: rsmu
 - **SERIAL_ADDRESS_MODE**; default: 8
 - **REV_ID**; default: rev-d-p
-- **SYNCE4L_DEBUG_MODE**; default: 0
+- **SYNCED_DEBUG_MODE**; default: 0
 
-When building `synce4l` via the **make all** or **make synce4l** commands, the Makefile
+When building `synced` via the **make all** or **make synced** commands, the Makefile
 will set the build arguments to their default values.
 
-For example, the following command can be used to build `synce4l` using the 
+For example, the following command can be used to build `synced` using the 
 ESMC stack, targeting a platform with arm64 architecture, employing the `RSMU` driver,
 using 8-bit I2C slave addressing, targeting the `Renesas Electronics Corporation
 ClockMatrix Rev-E` device, and enabling debug mode:
 
-**make synce4l ESMC_STACK=renesas PLATFORM=arm64 I2C_DRIVER=rsmu SERIAL_ADDRESS_MODE=8
-REV_ID=rev-e SYNCE4L_DEBUG_MODE=1**
+**make synced ESMC_STACK=renesas PLATFORM=arm64 I2C_DRIVER=rsmu SERIAL_ADDRESS_MODE=8
+REV_ID=rev-e SYNCED_DEBUG_MODE=1**
 
 The Makefile also supports the **CROSS_COMPILE**, **USER_CFLAGS**, and **USER_LDFLAGS**
 build arguments. **CROSS_COMPILE** can be used to set the compiler-compiler. In
@@ -209,7 +208,7 @@ A TX bundle number can be assigned if the Sync-E port is TX-capable.
 
 When parameters are not specified, their default values will be applied.
 
-`synce4l` will terminate if the configuration rules are broken.
+`synced` will terminate if the configuration rules are broken.
 
 ### Global Configuration
 
@@ -324,7 +323,7 @@ When parameters are not specified, their default values will be applied.
     - Default: 0 (disabled)
     - Range: 0-1
     - Description:
-      - If enabled, the communication path between `synce4l` and `pcm4l` will
+      - If enabled, the communication path between `synced` and `pcm4l` will
       be set up (set **[pcm4l_if_ip_addr]** and **[pcm4l_if_port_num]** to the appropriate
       values). This interface is used to send the physical clock category to `pcm4l`
   - `pcm4l` interface IP address **[pcm4l_if_ip_addr]**
@@ -336,7 +335,7 @@ When parameters are not specified, their default values will be applied.
     - Default: 0 (disabled)
     - Range: 0-1
     - Description:
-      - If enabled, the communication path between `synce4l` and `synce4l_cli` will
+      - If enabled, the communication path between `synced` and `synced_cli` will
       be set up (set **[mng_if_ip_addr]** and **[mng_if_port_num]** to the appropriate
       values)
   - Management interface IP address **[mng_if_ip_addr]**
@@ -409,7 +408,7 @@ clock port
 - Set the max message level
   - **management_set_max_msg_level()**
 
-These APIs can be executed using `synce4l_cli`.
+These APIs can be executed using `synced_cli`.
 
 The following callbacks are supported:
 
@@ -433,14 +432,14 @@ or external clock port
 Unless the user registers their own callback functions, template functions will
 be registered in their place.
 
-<a name="5_synce4l_cli"></a>
-## 5. `synce4l_cli`
+<a name="5_synced_cli"></a>
+## 5. `synced_cli`
 
-As mentioned earlier, `synce4l_cli` lets the user execute the generic **Management API**
-dynamically. `synce4l` connects to `synce4l_cli` via a dedicated TCP/IP socket
+As mentioned earlier, `synced_cli` lets the user execute the generic **Management API**
+dynamically. `synced` connects to `synced_cli` via a dedicated TCP/IP socket
 interface, whose parameters must be specified in the configuration file.
 
-`synce4l_cli` employs the following response/error codes:
+`synced_cli` employs the following response/error codes:
 
 - Ok (E_management_api_response_ok)
 - Invalid (E_management_api_response_invalid)
@@ -450,8 +449,8 @@ interface, whose parameters must be specified in the configuration file.
 <a name="6_pcm4l"></a>
 ## 6. `pcm4l`
 
-When a change in the current QL of the device occurs, `synce4l` converts this QL
-into a physical clock category and then sends it to `pcm4l`. `synce4l` connects
+When a change in the current QL of the device occurs, `synced` converts this QL
+into a physical clock category and then sends it to `pcm4l`. `synced` connects
 to `pcm4l` via a dedicated TCP/IP socket interface, whose parameters must be specified
 in the configuration file.
 

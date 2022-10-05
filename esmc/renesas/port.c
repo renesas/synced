@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-3
-* Pipeline ID: 123302
-* Commit Hash: 0d4d9ea7
+* Release Tag: 1-0-4
+* Pipeline ID: 125967
+* Commit Hash: 97f7354c
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -362,7 +362,7 @@ static void *port_tx_thread(void *arg)
                  name,
                  port_num);
 
-#if (SYNCE4L_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
         esmc_print_esmc_pdu(&msg, E_esmc_print_esmc_pdu_type_tx);
 #endif
         os_mutex_unlock(&g_port_print_mutex);
@@ -538,7 +538,7 @@ static void *port_rx_thread(void *arg)
                     (enhanced_flag == 1) ? "yes" : "no",
                     name,
                     port_num);
-  #if (SYNCE4L_DEBUG_MODE == 1)
+  #if (SYNCED_DEBUG_MODE == 1)
             esmc_print_esmc_pdu(&msg, E_esmc_print_esmc_pdu_type_rx);
   #endif
             os_mutex_unlock(&g_port_print_mutex);
