@@ -1,7 +1,7 @@
 /**
  * @file synced.c
  * @brief synced main program
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -47,10 +47,12 @@
 #include "monitor/monitor.h"
 
 #ifndef __linux__
-#error Linux is not defined!
-#endif
+#error __linux__ is not defined!
+#endif /* __linux__ */
 
-#define VERSION_ID   "1.0.4"
+#define VERSION_ID    "2.0.0"
+#define PIPELINE_ID   "219491"
+#define COMMIT_ID     "c34549a2"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 
@@ -61,6 +63,8 @@ struct interface {
 /* Static data */
 
 static const char *g_version = VERSION_ID;
+static const char *g_pipeline = PIPELINE_ID;
+static const char *g_commit = COMMIT_ID;
 
 static int g_prog_running = 1;
 
@@ -299,8 +303,8 @@ static int create_esmc_config(struct config *cfg, T_esmc_network_option net_opt,
 
 static int create_device_config(struct config *cfg, T_device_config *device_config)
 {
-  device_config->tcs_file = config_get_string(cfg, "global", "tcs_file");
-  device_config->i2c_device_name = config_get_string(cfg, "global", "i2c_device_name");
+  device_config->device_cfg_file = config_get_string(cfg, "global", "device_cfg_file");
+  device_config->device_name = config_get_string(cfg, "global", "device_name");
 
   device_config->synce_dpll_idx = config_get_int(cfg, "global", "synce_dpll_idx");
   pr_info("Set Sync-E DPLL index to %d", device_config->synce_dpll_idx);
@@ -420,7 +424,7 @@ int main(int argc, char *argv[])
   T_control_config control_config;
   T_monitor_config monitor_config;
 
-  int device_init_flag = 0;
+  int device_adaptor_init_flag = 0;
   int esmc_init_flag = 0;
   int control_init_flag = 0;
   int monitor_init_flag = 0;
@@ -498,7 +502,7 @@ int main(int argc, char *argv[])
         printf("Set %s to %s through command-line interface\n", "msg_tag", optarg);
         break;
       case 'v':
-        printf("%s version: %s\n", prog_name, g_version);
+        printf("%s version: %s.%s.%s\n", prog_name, g_version, g_pipeline, g_commit);
         goto quick_end;
       case '?':
         usage(prog_name);
@@ -538,7 +542,7 @@ int main(int argc, char *argv[])
     goto quick_end;
   }
 
-  pr_info("---Started %s---", prog_name);
+  pr_info("---Started %s (version: %s.%s.%s %s %s)---", prog_name, g_version, g_pipeline, g_commit, __DATE__, __TIME__);
 
   pr_info("Opened configuration file %s", cfg_file);
 
@@ -652,9 +656,9 @@ int main(int argc, char *argv[])
     pr_err("Failed to initialize management");
     goto end;
   }
-  if(device_init(&device_config) == 0) {
+  if(device_adaptor_init(&device_config) == 0) {
     pr_info("Initialized Sync-E DPLL");
-    device_init_flag = 1;
+    device_adaptor_init_flag = 1;
   } else {
     pr_err("Failed to initialize Sync-E DPLL");
     goto end;
@@ -741,8 +745,8 @@ end:
   if(control_init_flag) {
     control_deinit();
   }
-  if(device_init_flag) {
-    device_deinit();
+  if(device_adaptor_init_flag) {
+    device_adaptor_deinit();
   }
 
   /* Free sync and TX/RX port configurations */

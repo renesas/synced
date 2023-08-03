@@ -1,6 +1,6 @@
 /**
  * @file monitor.c
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <string.h>
@@ -43,16 +43,15 @@ static T_monitor_data g_monitor_data;
 
 int monitor_init(T_monitor_config const *monitor_config)
 {
+  g_lo_ql = monitor_config->lo_ql;
+  g_holdover_ql = monitor_config->holdover_ql;
+  g_holdover_timer_s = monitor_config->holdover_timer_s;
+
   /* Initialize mutex */
   if(os_mutex_init(&g_monitor_mutex) < 0) {
     return -1;
   }
 
-  g_lo_ql = monitor_config->lo_ql;
-  g_holdover_ql = monitor_config->holdover_ql;
-  g_holdover_timer_s = monitor_config->holdover_timer_s;
-
-  /* Set local data */
   memset(&g_monitor_data, 0, sizeof(g_monitor_data));
 
   g_monitor_data.holdover_monotonic_time_ms = 0;
@@ -66,6 +65,7 @@ int monitor_init(T_monitor_config const *monitor_config)
 
 void monitor_determine_ql(void)
 {
+  int err;
   T_device_dpll_state synce_dpll_state;
   T_device_dpll_state old_synce_dpll_state;
   int clk_idx;
@@ -78,7 +78,10 @@ void monitor_determine_ql(void)
   T_alarm_data alarm_data;
 
   /* Get status of Sync-E DPLL */
-  synce_dpll_state = device_get_synce_dpll_state();
+  err = device_adaptor_call_get_synce_dpll_state_cb(&synce_dpll_state);
+  if(err < 0) {
+    pr_err("Failed to get Sync-E DPLL state");
+  }
   if(synce_dpll_state >= E_device_dpll_state_max) {
     pr_warning("Sync-E DPLL is in unsupported state");
     return;
@@ -89,13 +92,15 @@ void monitor_determine_ql(void)
   old_ql = g_monitor_data.current_ql;
   old_sync_idx = g_monitor_data.current_sync_idx;
 
-  if((synce_dpll_state == E_device_dpll_state_lock_acquisition) ||
-     (synce_dpll_state == E_device_dpll_state_lock_recovery) ||
+  if((synce_dpll_state == E_device_dpll_state_lock_acquisition_recovery) ||
      (synce_dpll_state == E_device_dpll_state_locked)) {
     /* Sync-E DPLL is in lock acquisition, lock recovery, or locked state and is tracking a clock */
 
     /* Get clock index of current clock */
-    clk_idx = device_get_current_clk_idx();
+    err = device_adaptor_call_get_current_clk_idx_cb(&clk_idx);
+    if(err < 0) {
+      pr_err("Failed to get current clock index");
+    }
     if(clk_idx == INVALID_CLK_IDX) {
       alarm_data.alarm_type = E_alarm_type_invalid_clock_idx;
       management_call_notify_alarm_cb(&alarm_data);
@@ -151,18 +156,26 @@ void monitor_determine_ql(void)
       /* Sync-E DPLL is in freerun state (set QL to LO QL) */
       ql = g_lo_ql;
     } else {
-      /* Sync-E DPLL is in holdover state (set QL to holdover QL and then to LO QL once holdover timer expires) */
+      /* Sync-E DPLL is in holdover state */
       if(old_synce_dpll_state == E_device_dpll_state_locked) {
-        /* Just entered Holdover from Locked state. Advertise holdover QL until holdover timer expires */
+        /* Just entered holdover state from locked state. Start the holdover timer */
         g_monitor_data.holdover_monotonic_time_ms = os_get_monotonic_milliseconds() + (g_holdover_timer_s * 1000);
         /* The new QL is the worst between the previous QL and the holdover QL */
         ql = (old_ql > g_holdover_ql) ? old_ql : g_holdover_ql;
-      } else {
+      } else if(old_synce_dpll_state == E_device_dpll_state_holdover) {
+        /* QL will be changed to LO QL when the holdover timer expires */
         ql = old_ql;
+      } else {
+        /*
+         * Sync-E DPLL transitioned from lock acquisition-recovery state to holdover state.
+         * Stop the holdover timer to change QL to LO QL immediately
+         */
+        g_monitor_data.holdover_monotonic_time_ms = 0;
       }
 
       if(os_get_monotonic_milliseconds() > g_monitor_data.holdover_monotonic_time_ms) {
-        /* Advertise LO QL because holdover timer expired */
+        /* Advertise LO QL and freerun state instead of holdover state because holdover timer expired */
+        synce_dpll_state = E_device_dpll_state_freerun;
         ql = g_lo_ql;
       }
     }
@@ -242,7 +255,6 @@ int monitor_deinit(void)
   g_lo_ql = E_esmc_ql_max;
   g_holdover_ql = E_esmc_ql_max;
 
-  /* Clear local data */
   g_holdover_timer_s = 0;
   g_monitor_data.holdover_monotonic_time_ms = 0;
   g_monitor_data.current_synce_dpll_state = E_device_dpll_state_max;

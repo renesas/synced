@@ -1,6 +1,6 @@
 /**
  * @file common.c
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <stdio.h>
@@ -108,8 +108,7 @@ COMPILE_TIME_ASSERT((sizeof(g_ql_enum_to_str)/sizeof(g_ql_enum_to_str[0])) == E_
 /* See T_device_dpll_state in device_adaptor.h */
 static const char *g_device_dpll_state_enum_to_str[] = {
   "freerun",
-  "lock acquisition",
-  "lock recovery",
+  "lock acquisition-recovery",
   "locked",
   "holdover"
 };
@@ -312,10 +311,12 @@ int check_ql_setting(T_esmc_network_option net_opt, T_esmc_ql ql)
 
 void mac_addr_arr_to_str(struct sockaddr_ll *mac_addr, char mac_addr_str[MAX_MAC_ADDR_STR_LEN])
 {
-  sprintf(mac_addr_str,
-          "%02X:%02X:%02X:%02X:%02X:%02X",
-          mac_addr->sll_addr[0], mac_addr->sll_addr[1], mac_addr->sll_addr[2],
-          mac_addr->sll_addr[3], mac_addr->sll_addr[4], mac_addr->sll_addr[5]);
+  const char *format = "%02X:%02X:%02X:%02X:%02X:%02X";
+  snprintf(mac_addr_str,
+           MAX_MAC_ADDR_STR_LEN - 1,
+           format,
+           mac_addr->sll_addr[0], mac_addr->sll_addr[1], mac_addr->sll_addr[2],
+           mac_addr->sll_addr[3], mac_addr->sll_addr[4], mac_addr->sll_addr[5]);
 }
 
 int calculate_rank(int ql, unsigned char priority, unsigned char hops)
@@ -344,9 +345,9 @@ void print_sync_info(T_management_sync_info *sync_info)
       pr_info("    Rank: 0x%06X", sync_info->synce_clk_info.rank);
       pr_info("    Reference monitor status: %s", conv_sync_clk_state_enum_to_str(sync_info->synce_clk_info.clk_state));
       if(sync_info->synce_clk_info.clk_state == E_sync_clk_state_unqualified) {
-        pr_info("      Frequency offset alarm: %d", sync_info->synce_clk_info.ref_mon_status.frequency_offset_live_status);
-        pr_info("      No activity alarm: %d", sync_info->synce_clk_info.ref_mon_status.no_activity_live_status);
-        pr_info("      Loss of signal alarm: %d", sync_info->synce_clk_info.ref_mon_status.loss_of_signal_live_status);
+        pr_info("      Frequency offset alarm: %d", sync_info->synce_clk_info.ref_mon_status.frequency_offset_alarm_status);
+        pr_info("      No activity alarm: %d", sync_info->synce_clk_info.ref_mon_status.no_activity_alarm_status);
+        pr_info("      Loss of signal alarm: %d", sync_info->synce_clk_info.ref_mon_status.loss_of_signal_alarm_status);
       }
       pr_info("    RX timeout: %s", sync_info->synce_clk_info.rx_timeout_flag ? "yes" : "no");
       pr_info("    Port link: %s", sync_info->synce_clk_info.port_link_down_flag ? "down" : "up");
@@ -377,9 +378,9 @@ void print_sync_info(T_management_sync_info *sync_info)
       pr_info("    Rank: 0x%06X", sync_info->ext_clk_info.rank);
       pr_info("    Reference monitor status: %s", conv_sync_clk_state_enum_to_str(sync_info->ext_clk_info.clk_state));
       if(sync_info->ext_clk_info.clk_state == E_sync_clk_state_unqualified) {
-        pr_info("      Frequency offset alarm: %d", sync_info->ext_clk_info.ref_mon_status.frequency_offset_live_status);
-        pr_info("      No activity alarm: %d", sync_info->ext_clk_info.ref_mon_status.no_activity_live_status);
-        pr_info("      Loss of signal alarm: %d", sync_info->ext_clk_info.ref_mon_status.loss_of_signal_live_status);
+        pr_info("      Frequency offset alarm: %d", sync_info->ext_clk_info.ref_mon_status.frequency_offset_alarm_status);
+        pr_info("      No activity alarm: %d", sync_info->ext_clk_info.ref_mon_status.no_activity_alarm_status);
+        pr_info("      Loss of signal alarm: %d", sync_info->ext_clk_info.ref_mon_status.loss_of_signal_alarm_status);
       }
       break;
 

@@ -1,6 +1,6 @@
 /**
  * @file management.c
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <limits.h>
@@ -71,10 +71,10 @@ typedef struct {
 
 /* Static data */
 
-static T_esmc_ql g_current_ql = E_esmc_ql_max;
+static T_esmc_ql g_current_ql;
 
 #if ENABLE_EXTERNAL_MUX_CONTROL
-static T_ext_mux_entry external_mux_table[EXTERNAL_MUX_NUM] = {
+static T_ext_mux_entry g_external_mux_table[EXTERNAL_MUX_NUM] = {
   /* Mux 0 */
   {
     .names = {"eth13", "eth2", "eth7", ""},
@@ -147,7 +147,7 @@ static void management_example_ext_mux_control(const char *port_name, T_esmc_ql 
   (void)current_ql;
 
   for(mux_idx = 0; mux_idx < EXTERNAL_MUX_NUM; mux_idx++) {
-    mux_entry = &external_mux_table[mux_idx];
+    mux_entry = &g_external_mux_table[mux_idx];
     for(port_idx = 0; port_idx < EXTERNAL_MUX_PORTS; port_idx++) {
       if(!strcmp(port_name, mux_entry->names[port_idx])) {
         /* Found the mux for this port, so update the rank */
@@ -291,15 +291,16 @@ static void management_template_notify_pcm4l_connection_status(int on)
   }
 }
 
-
 /* Global functions */
 
 int management_init(void)
 {
   if(g_management_init_flag) {
-    pr_warning("Management module already initialized");
+    pr_warning("Management interface already initialized");
     return 0;
   }
+
+  g_current_ql = E_esmc_ql_max;
 
   /* Register management callbacks */
   memset(&g_management_callbacks, 0, sizeof(g_management_callbacks));

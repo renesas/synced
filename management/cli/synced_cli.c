@@ -1,7 +1,7 @@
 /**
  * @file synced_cli.c
  * @brief synced command-line interface main program
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -35,16 +35,20 @@
 #include "../../common/print.h"
 
 #ifndef __linux__
-#error Linux is not defined!
-#endif
+#error __linux__ is not defined!
+#endif /* __linux__ */
 
-#define VERSION_ID   "1.0.4"
+#define VERSION_ID    "2.0.0"
+#define PIPELINE_ID   "219491"
+#define COMMIT_ID     "c34549a2"
 
 #define CLI_BUFF_SIZE   128
 
 /* Static data */
 
 static const char *g_version = VERSION_ID;
+static const char *g_pipeline = PIPELINE_ID;
+static const char *g_commit = COMMIT_ID;
 
 static char cli_buffer[CLI_BUFF_SIZE];
 static int print_flag;
@@ -107,9 +111,13 @@ int main(int argc, char *argv[])
   int status;
   int i;
 
+  memset(&server, 0, sizeof(server));
+  memset(&req_msg, 0, sizeof(req_msg));
+  memset(&rsp_msg, 0, sizeof(rsp_msg));
+
   for(i = 1; i < argc; i++) {
     if(!strcmp(argv[i], "-v")) {
-      printf("%s version: %s\n", prog_name, g_version);
+      printf("%s version: %s.%s.%s\n", prog_name, g_version, g_pipeline, g_commit);
       return -1;
     }
   }
@@ -119,21 +127,15 @@ int main(int argc, char *argv[])
     usage(prog_name);
     return -1;
   }
+
   fd = socket(AF_INET, SOCK_STREAM, 0);
   if(fd < 0) {
     printf("***Error: Failed to create socket\n");
     usage(prog_name);
     return -1;
   }
+  printf("\nCreated socket (IP Address: %s, port number: %s, and print flag: %s)\n", argv[1], argv[2], argv[3]);
 
-  printf("%s started\n", prog_name);
-
-  printf("Socket created successfully (IP Address: %s, port number: %s, and print flag: %s)\n", argv[1], argv[2], argv[3]);
-
-  /* Print supported commands */
-  print_help();
-
-  memset(&server, 0, sizeof(server));
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = inet_addr(argv[1]);
   server.sin_port = htons(atoi(argv[2]));
@@ -144,12 +146,16 @@ int main(int argc, char *argv[])
     close(fd);
     return -1;
   }
-  
-  printf("\nSuccessfully connected to socket\n");
+  printf("Connected to socket\n");
 
   print_set_prog_name(prog_name);
   print_set_max_msg_level(LOG_DEBUG);
   print_set_stdout_en(1);
+
+  printf("---Started %s (version: %s.%s.%s %s %s)---", prog_name, g_version, g_pipeline, g_commit, __DATE__, __TIME__);
+
+  /* Print supported commands */
+  print_help();
 
   while(1) {
     /* Print command prompt */
@@ -389,5 +395,8 @@ int main(int argc, char *argv[])
   }
 
   close(fd);
+
+  printf("---Ended %s---", prog_name);
+
   return 0;
 }

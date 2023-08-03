@@ -1,6 +1,6 @@
 /**
  * @file control.c
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <stdlib.h>
@@ -34,6 +34,8 @@
 #define MAX_NUMBER_HOPS   255
 
 #define LO_NUMBER_OF_HOPS   0xFF
+
+#define MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN   256 /* Change if MAX_NUM_OF_CLOCKS changes */
 
 /* Static data */
 
@@ -87,10 +89,14 @@ static void control_update_device_priority_table(void)
   T_sync_entry *temp_sync_table;
   int i;
   int priority = 0;
-  T_device_clock_priority_table priority_table;
+  T_device_clock_priority_table table;
   int best_clk_idx;
   int best_rank;
   int err;
+  char buff[MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN];
+  const char *format = " %d";
+  int pos = 0;
+  int ret;
 
   temp_sync_table = calloc(g_control_data.num_syncs, sizeof(*temp_sync_table));
   if(!temp_sync_table) {
@@ -122,18 +128,38 @@ static void control_update_device_priority_table(void)
     pr_debug("Best clock is LO");
   }
 
-  priority_table.entries = priority;
-  priority_table.clock_priority_table = &priority_array[0];
+  table.num_entries = priority;
+  table.clock_priority_table = &priority_array[0];
 
   /* Set priority table */
-  err = device_set_clock_priorities(&priority_table);
-
-  if(err != 0) {
+  err = device_adaptor_call_set_clock_priorities_cb(&table);
+  if(err < 0) {
     pr_err("Failed to set device clock priorities");
   } else {
     /* Clear update priority table flag */
     g_control_data.update_priority_table_flag = 0;
   }
+
+  for(priority = 0; priority < table.num_entries; priority++) {
+    if(pos >= MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN - 1) {
+      break;
+    }
+
+    /* snprintf returns number of characters stored in array, not including null character */
+    ret = snprintf(&buff[pos],
+                   MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN - 1 - pos,
+                   format,
+                   table.clock_priority_table[priority].clk_idx);
+
+    if(ret <= 0) {
+      break;
+    }
+
+    pos += ret;
+  }
+  buff[pos] = 0;
+
+  pr_debug("Set device clock priorities (%d):%s (ordered list of clock indices)", table.num_entries, buff);
 
   free(temp_sync_table);
   temp_sync_table = NULL;
@@ -290,19 +316,21 @@ static int control_rx_event_cb(T_esmc_adaptor_rx_event_cb_data *cb_data)
 static int control_check_qualification_status(int clk_idx, T_device_clk_reference_monitor_status *ref_mon_status)
 {
   int alarm_raised_flag;
+  int err;
 
   if(clk_idx >= MAX_NUM_OF_CLOCKS) {
     return 0;
   }
 
-  if(device_get_reference_monitor_status(clk_idx, ref_mon_status) < 0) {
+  err = device_adaptor_call_get_reference_monitor_status_cb(clk_idx, ref_mon_status);
+  if(err < 0) {
     pr_err("Failed to get reference monitor status of clock index %d", clk_idx);
     return 0;
   }
 
-  alarm_raised_flag = (ref_mon_status->frequency_offset_live_status ||
-                       ref_mon_status->no_activity_live_status ||
-                       ref_mon_status->loss_of_signal_live_status);
+  alarm_raised_flag = (ref_mon_status->frequency_offset_alarm_status ||
+                       ref_mon_status->no_activity_alarm_status ||
+                       ref_mon_status->loss_of_signal_alarm_status);
 
   if(alarm_raised_flag) {
     /* One or more of the alarms were raised */
@@ -330,7 +358,6 @@ int control_init(T_control_config const *control_config)
     return -1;
   }
 
-  /* Set local data */
   memset(&g_control_data, 0, sizeof(g_control_data));
 
   g_control_data.net_opt = control_config->net_opt;
@@ -979,7 +1006,6 @@ void control_deinit(void)
   /* Deinitialize mutex */
   os_mutex_deinit(&g_control_mutex);
 
-  /* Clear local data */
   g_control_data.net_opt = E_esmc_network_option_max;
   g_control_data.no_ql_en = 0;
   g_control_data.synce_forced_ql_en = 0;

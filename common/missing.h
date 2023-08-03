@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #ifndef MISSING_H
@@ -28,6 +28,6 @@
 #ifndef LIST_FOREACH_SAFE
 #define LIST_FOREACH_SAFE(var, head, field, tvar) \
   for((var) = LIST_FIRST((head)); (var) && ((tvar) = LIST_NEXT((var), field), 1); (var) = (tvar))
-#endif
+#endif /* LIST_FOREACH_SAFE */
 
 #endif /* MISSING_H */

@@ -1,6 +1,6 @@
 /**
  * @file esmc_adaptor.c
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include "esmc.h"
@@ -26,11 +26,11 @@
 
 /* Static data */
 
-static int g_esmc_tx_port_to_sync_idx_map[MAX_NUM_PORTS];
-static int g_esmc_rx_port_to_sync_idx_map[MAX_NUM_PORTS];
+static int g_esmc_tx_port_to_sync_idx_map[MAX_NUM_OF_PORTS];
+static int g_esmc_rx_port_to_sync_idx_map[MAX_NUM_OF_PORTS];
 static T_esmc_adaptor_tx_event_cb g_esmc_tx_event_cb = NULL;
 static T_esmc_adaptor_rx_event_cb g_esmc_rx_event_cb = NULL;
-static unsigned char g_esmc_tx_mac_addr[MAX_NUM_PORTS][ETH_ALEN];
+static unsigned char g_esmc_tx_mac_addr[MAX_NUM_OF_PORTS][ETH_ALEN];
 int g_esmc_tx_mac_addr_num;
 
 /* Static functions */
@@ -60,7 +60,7 @@ static int esmc_tx_event_cb(T_esmc_tx_event_cb_data *cb_data)
       return -1;
   }
 
-  if((port_num < 0) || (port_num >= MAX_NUM_PORTS)) {
+  if((port_num < 0) || (port_num >= MAX_NUM_OF_PORTS)) {
     return -1;
   }
 
@@ -110,7 +110,7 @@ static int esmc_rx_event_cb(T_esmc_rx_event_cb_data *cb_data)
       return -1;
   }
 
-  if((port_num < 0) || (port_num >= MAX_NUM_PORTS)) {
+  if((port_num < 0) || (port_num >= MAX_NUM_OF_PORTS)) {
     return -1;
   }
 
@@ -127,8 +127,8 @@ int esmc_adaptor_init(T_esmc_config *config)
   T_tx_port_info const *tx_port;
   T_rx_port_info const *rx_port;
 
-  int num_tx_ports = (config->num_tx_ports > MAX_NUM_PORTS) ? MAX_NUM_PORTS : config->num_tx_ports;
-  int num_rx_ports = (config->num_rx_ports > MAX_NUM_PORTS) ? MAX_NUM_PORTS : config->num_rx_ports;
+  int num_tx_ports = (config->num_tx_ports > MAX_NUM_OF_PORTS) ? MAX_NUM_OF_PORTS : config->num_tx_ports;
+  int num_rx_ports = (config->num_rx_ports > MAX_NUM_OF_PORTS) ? MAX_NUM_OF_PORTS : config->num_rx_ports;
 
   T_esmc_network_option net_opt = config->net_opt;
   T_esmc_ql init_ql = config->init_ql;
@@ -139,7 +139,7 @@ int esmc_adaptor_init(T_esmc_config *config)
   T_port_num rx_port_num;
 
   /* Initialize static variables */
-  for(i = 0; i < MAX_NUM_PORTS; i++) {
+  for(i = 0; i < MAX_NUM_OF_PORTS; i++) {
     g_esmc_tx_port_to_sync_idx_map[i] = INVALID_SYNC_IDX;
     g_esmc_rx_port_to_sync_idx_map[i] = INVALID_SYNC_IDX;
   }
@@ -165,7 +165,7 @@ int esmc_adaptor_init(T_esmc_config *config)
   /* Set ESMC TX port to sync index map */
   for(i = 0; i < num_tx_ports; i++) {
     tx_port_num = tx_port->port_num;
-    if((tx_port_num >= 0) && (tx_port_num < MAX_NUM_PORTS)) {
+    if((tx_port_num >= 0) && (tx_port_num < MAX_NUM_OF_PORTS)) {
       g_esmc_tx_port_to_sync_idx_map[tx_port_num] = tx_port->sync_idx;
       memcpy(&g_esmc_tx_mac_addr[g_esmc_tx_mac_addr_num], tx_port->mac_addr, ETH_ALEN);
       g_esmc_tx_mac_addr_num++;
@@ -187,7 +187,7 @@ int esmc_adaptor_init(T_esmc_config *config)
   /* Set ESMC RX port to sync index map */
   for(i = 0; i < num_rx_ports; i++) {
     rx_port_num = rx_port->port_num;
-    if((rx_port_num >= 0) && (rx_port_num < MAX_NUM_PORTS)) {
+    if((rx_port_num >= 0) && (rx_port_num < MAX_NUM_OF_PORTS)) {
       g_esmc_rx_port_to_sync_idx_map[rx_port_num] = rx_port->sync_idx;
     }
     else {
@@ -218,7 +218,7 @@ int esmc_adaptor_set_tx_ql(T_esmc_ql ql, int best_sync_idx, unsigned long long s
 
   /* Find best port number */
   best_port_num = INVALID_PORT_NUM;
-  for(i = 0; i < MAX_NUM_PORTS; i++) {
+  for(i = 0; i < MAX_NUM_OF_PORTS; i++) {
     if(g_esmc_rx_port_to_sync_idx_map[i] == best_sync_idx) {
       best_port_num = i;
       break;
@@ -230,7 +230,7 @@ int esmc_adaptor_set_tx_ql(T_esmc_ql ql, int best_sync_idx, unsigned long long s
   port_tx_bundle_bitmap = 0;
   while(sync_tx_bundle_bitmap != 0) {
     if(sync_tx_bundle_bitmap & 1) {
-      for(i = 0; i < MAX_NUM_PORTS; i++) {
+      for(i = 0; i < MAX_NUM_OF_PORTS; i++) {
         if(g_esmc_rx_port_to_sync_idx_map[i] == sync_idx) {
           port_tx_bundle_bitmap |= (unsigned long long)1 << i;
           break;
@@ -276,7 +276,7 @@ int esmc_adaptor_deinit(void)
   int i;
 
   /* Deinitialize static variables */
-  for(i = 0; i < MAX_NUM_PORTS; i++) {
+  for(i = 0; i < MAX_NUM_OF_PORTS; i++) {
     g_esmc_tx_port_to_sync_idx_map[i] = INVALID_SYNC_IDX;
     g_esmc_rx_port_to_sync_idx_map[i] = INVALID_SYNC_IDX;
   }

@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <ctype.h>
@@ -137,7 +137,7 @@ struct config_esmc_ql {
 
 /* Static data */
 
-static char g_config_port_name[MAX_NUM_PORTS][INTERFACE_MAX_NAME_LEN];
+static char g_config_port_name[MAX_NUM_OF_PORTS][INTERFACE_MAX_NAME_LEN];
 static int g_config_clk_idx_flag[MAX_NUM_OF_CLOCKS] = {0};
 static int g_config_pri_flag[MAX_NUM_OF_PRIORITIES] = {0};
 
@@ -237,8 +237,8 @@ static struct config_item g_config_table[] = {
   GLOB_ITEM_INT("max_msg_lvl", PRINT_LEVEL_MAX, PRINT_LEVEL_MIN, PRINT_LEVEL_MAX),
   GLOB_ITEM_INT("stdout_en", 1, 0, 1),
   GLOB_ITEM_INT("syslog_en", 0, 0, 1),
-  GLOB_ITEM_STR("tcs_file", NULL),
-  GLOB_ITEM_STR("i2c_device_name", "/dev/rsmu1"),
+  GLOB_ITEM_STR("device_cfg_file", NULL),                                          /* Applicable for generic device */
+  GLOB_ITEM_STR("device_name", "/dev/rsmu1"),
   GLOB_ITEM_INT("synce_dpll_idx", 0, 0, 7),
   GLOB_ITEM_STR("holdover_ql", "FAILED"),
   GLOB_ITEM_INT("holdover_tmr", 300, 0, INT32_MAX),                                /* Seconds */
@@ -616,11 +616,11 @@ int config_read(const char *name,
         char port[INTERFACE_MAX_NAME_LEN];
 
         port_counter++;
-        if(port_counter > MAX_NUM_PORTS) {
+        if(port_counter > MAX_NUM_OF_PORTS) {
           fprintf(stderr,
                   "Failed to parse configuration on line %d because maximum number of ports %d reached\n",
                   line_num,
-                  MAX_NUM_PORTS);
+                  MAX_NUM_OF_PORTS);
           goto parse_error;
         }
 
@@ -639,7 +639,7 @@ int config_read(const char *name,
           goto parse_error;
         }
 
-        for(i = 0; i < MAX_NUM_PORTS; i++) {
+        for(i = 0; i < MAX_NUM_OF_PORTS; i++) {
           if(!strcmp(port, g_config_port_name[i])) {
             fprintf(stderr, "Failed to parse configuration for port %s on line %d because name already used\n", port, line_num);
             goto parse_error;

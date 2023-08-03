@@ -1,6 +1,6 @@
 /**
  * @file mng_if.h
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #ifndef MNG_IF_H
@@ -26,7 +26,7 @@
 #include "../common/common.h"
 #include "management.h"
 
-#define MAX_SYNC_INFO_STRUCTURES   MAX_NUM_PORTS
+#define MAX_SYNC_INFO_STRUCTURES   MAX_NUM_OF_PORTS
 
 /* CLI request structures */
 typedef struct {

@@ -1,6 +1,6 @@
 /**
  * @file pcm4l_if.c
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -281,12 +281,10 @@ T_pcm4l_error_code pcm4l_if_send(const unsigned char *req_buff, unsigned int req
   ret = E_pcm4l_error_code_ok;
 
   if((rsp_buff != NULL) && (max_rsp_len > 0)) {
-  
     status = recv(g_pcm4l_if_fd, rsp_buff, max_rsp_len, 0);
-
-    if (status == 0) {
+    if(status == 0) {
       ret = E_pcm4l_error_code_timeout;
-    } else if (status < 0) {
+    } else if(status < 0) {
       ret = E_pcm4l_error_code_fail;
     }
   }

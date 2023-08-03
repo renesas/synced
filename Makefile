@@ -1,6 +1,6 @@
 #####################################################################################################################
 # @file Makefile
-# @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+# @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #####################################################################################################################
 #####################################################################################################################
-# Release Tag: 1-0-4
-# Pipeline ID: 125967
-# Commit Hash: 97f7354c
+# Release Tag: 2-0-0
+# Pipeline ID: 219491
+# Commit Hash: c34549a2
 #####################################################################################################################
 
 ###################
@@ -34,67 +34,30 @@ endif
 #  PLATFORM := amd64 --> AMD64
 #  PLATFORM := arm64 --> ARM64
 ifndef PLATFORM
-$(warning PLATFORM is not defined (PLATFORM must be amd64 or arm64))
+$(warning PLATFORM is not defined)
 PLATFORM := amd64
-$(warning Setting PLATFORM to $(PLATFORM))
+$(warning Setting PLATFORM to $(PLATFORM) (default)...)
 endif
 
+ifndef CROSS_COMPILE
+$(warning CROSS_COMPILE is not defined)
+endif
 ifeq ($(PLATFORM),arm64)
-override CROSS_COMPILE := /usr/bin/aarch64-linux-gnu-
+override CROSS_COMPILE += /usr/bin/aarch64-linux-gnu-
 $(warning Setting CROSS_COMPILE to $(CROSS_COMPILE))
 endif
 
-# I2C_DRIVER:
-#  I2C_DRIVER := ftdi  --> FTDI
-#  I2C_DRIVER := smbus --> SMBus
-#  I2C_DRIVER := rsmu  --> RSMU
-ifndef I2C_DRIVER
-$(warning I2C_DRIVER is not defined (I2C_DRIVER must be ftdi, smbus, or rsmu))
-I2C_DRIVER := rsmu
-$(warning Setting I2C_DRIVER to $(I2C_DRIVER))
-endif
-
 # DEVICE:
-#  DEVICE := generic --> Generic device
-#  DEVICE := cm      --> ClockMatrix
+#  DEVICE := generic --> Generic Device
+#  DEVICE := rsmu    --> RSMU
 ifndef DEVICE
 $(warning DEVICE is not defined)
 DEVICE := generic
-$(warning Setting DEVICE to $(DEVICE))
+$(warning Setting DEVICE to $(DEVICE) (default)...)
 endif
-
-ifeq ($(I2C_DRIVER),rsmu)
-override SERIAL_ADDRESS_MODE := 0
-$(warning Setting SERIAL_ADDRESS_MODE to $(SERIAL_ADDRESS_MODE))
-endif
-
-ifndef SERIAL_ADDRESS_MODE
-$(warning SERIAL_ADDRESS_MODE is not defined (SERIAL_ADDRESS_MODE must be either 0, 7, 8, 15, or 16))
-SERIAL_ADDRESS_MODE := 8
-$(warning Setting SERIAL_ADDRESS_MODE to $(SERIAL_ADDRESS_MODE) (default)...)
-endif
-
-ifeq ($(DEVICE),cm) # >>>> Start ClockMatrix definitions
-IDT_CLOCKMATRIX_HOST_ADDRESS_MODE := $(SERIAL_ADDRESS_MODE)
-
-ifeq ($(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE),16)
-$(error IDT_CLOCKMATRIX_HOST_ADDRESS_MODE=$(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE) is currently disabled)
-endif
-
-ifeq ($(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE),$(filter $(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE),7 15))
-$(error SPI is not supported)
-endif
-
-ifndef REV_ID
-$(warning REV_ID is not defined (REV_ID must be either rev-e or rev-d-p))
-REV_ID := rev-d-p
-$(warning Setting REV_ID to $(REV_ID) (default)...)
-endif
-endif # <<<< End ClockMatrix definitions
-
 ifndef SYNCED_DEBUG_MODE
 $(warning SYNCED_DEBUG_MODE is not defined (SYNCED_DEBUG_MODE must be either 0 or 1))
-SYNCED_DEBUG_MODE := 0
+override SYNCED_DEBUG_MODE := 0
 $(warning Setting SYNCED_DEBUG_MODE to $(SYNCED_DEBUG_MODE) (default)...)
 endif
 
@@ -107,6 +70,7 @@ PKG_DIR   := pkg
 CFG_DIR   := cfg
 CFG_FILES := $(shell find $(CFG_DIR) -name "*.cfg")
 TCS_FILES := $(shell find $(CFG_DIR) -name "*.tcs")
+RBS_FILES := $(shell find $(CFG_DIR) -name "*.rbs")
 
 LICENSE_FILE := COPYING
 
@@ -120,24 +84,23 @@ COMMON_SRC_FILES := $(shell find $(COMMON_DIR) -name "*.c")
 CONTROL_DIR       := control
 CONTROL_SRC_FILES := $(shell find $(CONTROL_DIR) -name "*.c")
 
-DEVICE_DIR         := device/$(DEVICE)
-DEVICE_SRC_FILES   := $(shell find $(DEVICE_DIR) -name "*.c")
-DEVICE_ADAPTOR_DIR := device/device_adaptor
+DEVICE_ROOT_DIR          := device
+DEVICE_DIR               := $(DEVICE_ROOT_DIR)/$(DEVICE)
+DEVICE_ADAPTOR_DIR       := $(DEVICE_ROOT_DIR)/device_adaptor
+DEVICE_GENERIC_DIR       := $(DEVICE_ROOT_DIR)/generic
+DEVICE_RSMU_DIR          := $(DEVICE_ROOT_DIR)/rsmu
+DEVICE_ADAPTOR_SRC_FILES := $(shell find $(DEVICE_ADAPTOR_DIR) -name "*.c")
+DEVICE_GENERIC_SRC_FILES := $(shell find $(DEVICE_GENERIC_DIR) -name "*.c")
+DEVICE_RSMU_SRC_FILES    := $(shell find $(DEVICE_RSMU_DIR) -name "*.c")
+DEVICE_SRC_FILES         := \
+	$(DEVICE_ADAPTOR_SRC_FILES) \
+	$(DEVICE_GENERIC_SRC_FILES) \
+	$(DEVICE_RSMU_SRC_FILES)
 
-ifeq ($(DEVICE),cm) # >>>> Start ClockMatrix definitions
-CLOCKMATRIX_API_DIR       := $(DEVICE_DIR)/clockmatrix-api
-CLOCKMATRIX_API_INC_DIR   := $(CLOCKMATRIX_API_DIR)/include/$(REV_ID)
-CLOCKMATRIX_API_SRC_DIR   := $(CLOCKMATRIX_API_DIR)/source/$(REV_ID)
-CLOCKMATRIX_API_SRC_FILES := $(shell find $(CLOCKMATRIX_API_SRC_DIR) -name "*.c")
-override DEVICE_SRC_FILES := $(CLOCKMATRIX_API_SRC_FILES) $(shell find $(DEVICE_DIR) -maxdepth 1 -name "*.c")
-endif # <<<< End ClockMatrix definitions
-
-I2C_DRIVER_DIR       := device/i2c_drivers/$(I2C_DRIVER)
-I2C_DRIVER_SRC_FILES := $(shell find $(I2C_DRIVER_DIR) -name "*.c")
-
-ESMC_STACK_DIR       := esmc/$(ESMC_STACK)
-ESMC_STACK_SRC_FILES := $(shell find $(ESMC_STACK_DIR) -name "*.c")
+ESMC_DIR             := esmc
+ESMC_STACK_DIR       := $(ESMC_DIR)/$(ESMC_STACK)
 ESMC_ADAPTOR_DIR     := esmc/esmc_adaptor
+ESMC_STACK_SRC_FILES := $(shell find $(ESMC_STACK_DIR) -name "*.c")
 
 MANAGEMENT_DIR       := management
 MANAGEMENT_SRC_FILES := $(shell find $(MANAGEMENT_DIR) -maxdepth 1 -name "*.c")
@@ -151,9 +114,10 @@ INCS := \
 	$(PROJ_DIR) \
 	$(COMMON_DIR) \
 	$(CONTROL_DIR) \
+	$(DEVICE_DIR) \
 	$(DEVICE_ADAPTOR_DIR) \
-	$(CLOCKMATRIX_API_INC_DIR) \
-	$(I2C_DRIVER_DIR) \
+	$(DEVICE_GENERIC_DIR) \
+	$(DEVICE_RSMU_DIR) \
 	$(ESMC_ADAPTOR_DIR) \
 	$(ESMC_STACK_DIR) \
 	$(MANAGEMENT_DIR) \
@@ -162,11 +126,8 @@ INCS := \
 PREFIXED_INCS := $(addprefix -I,$(INCS))
 
 DEFINES := \
-	SYNCED_DEBUG_MODE=$(SYNCED_DEBUG_MODE) \
-	'DEVICE_DRIVER_PATH(filename)=<$(CLOCKMATRIX_API_INC_DIR)/filename>' \
-	'DEVICE_I2C_DRIVER_PATH(filename)=<$(I2C_DRIVER_DIR)/filename>' \
-	SERIAL_ADDRESS_MODE=$(SERIAL_ADDRESS_MODE) \
-	IDT_CLOCKMATRIX_HOST_ADDRESS_MODE=$(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE)
+	DEVICE=$(DEVICE) \
+	SYNCED_DEBUG_MODE=$(SYNCED_DEBUG_MODE)
 
 PREFIXED_DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -174,7 +135,6 @@ SRC_FILES := \
 	$(COMMON_SRC_FILES) \
 	$(CONTROL_SRC_FILES) \
 	$(DEVICE_SRC_FILES) \
-	$(I2C_DRIVER_SRC_FILES) \
 	$(ESMC_STACK_SRC_FILES) \
 	$(MANAGEMENT_SRC_FILES) \
 	$(MONITOR_SRC_FILES) \
@@ -188,6 +148,7 @@ SYNCED := $(BIN_DIR)/synced
 SYNCED_CLI_OBJ_DIR := $(OBJ_DIR)/management/cli
 
 SYNCED_CLI_DEFINES := \
+	DEVICE=$(DEVICE) \
 	SYNCED_CLI_PRINT=1
 
 SYNCED_CLI_PREFIXED_DEFINES := $(addprefix -D,$(SYNCED_CLI_DEFINES))
@@ -211,21 +172,17 @@ CFLAGS := \
 	-Wextra
 
 ifdef USER_CFLAGS
-override CFLAGS += $(USER_CFLAGS)
+override CFLAGS += \
+	$(USER_CFLAGS)
 endif
 
 LDFLAGS := \
 	-pthread \
 	-lrt
 
-ifeq ($(I2C_DRIVER),ftdi)
-override LDFLAGS += \
-	$(I2C_DRIVER_DIR)/libMPSSE.a \
-	-ldl $(I2C_DRIVER_DIR)/libftd2xx.a
-endif
-
 ifdef USER_LDFLAGS
-override LDFLAGS += $(USER_LDFLAGS)
+override LDFLAGS += \
+	$(USER_LDFLAGS)
 endif
 
 SYNCED_CLI_CFLAGS := \
@@ -265,20 +222,15 @@ synced: synced-header create-dirs $(SYNCED)
 
 .PHONY: synced-header
 synced-header:
-	@echo "#################################"
+	@echo "###############################"
 	@echo "#"
-	@echo "# B U I L D I N G   S Y N C E 4 L"
+	@echo "# B U I L D I N G   S Y N C E D"
 	@echo "#"
-	@echo "#################################"
+	@echo "###############################"
 	@echo "ESMC_STACK: $(ESMC_STACK)"
 	@echo "PLATFORM: $(PLATFORM)"
-	@echo "I2C_DRIVER: $(I2C_DRIVER)"
+	@echo "CROSS_COMPILE: $(CROSS_COMPILE)"
 	@echo "DEVICE: $(DEVICE)"
-	@echo "SERIAL_ADDRESS_MODE: $(SERIAL_ADDRESS_MODE)"
-ifeq ($(DEVICE),cm) # >>>> Start ClockMatrix definitions
-	@echo "IDT_CLOCKMATRIX_HOST_ADDRESS_MODE: $(IDT_CLOCKMATRIX_HOST_ADDRESS_MODE)"
-	@echo "REV_ID: $(REV_ID)"
-endif # <<<< End ClockMatrix definitions
 	@echo "SYNCED_DEBUG_MODE: $(SYNCED_DEBUG_MODE)"
 
 .PHONY: create-dirs
@@ -307,11 +259,11 @@ synced-cli: synced-cli-header create-dirs $(SYNCED_CLI)
 
 .PHONY: synced-cli-header
 synced-cli-header:
-	@echo "#########################################"
+	@echo "#######################################"
 	@echo "#"
-	@echo "# B U I L D I N G   S Y N C E 4 L   C L I"
+	@echo "# B U I L D I N G   S Y N C E D   C L I"
 	@echo "#"
-	@echo "#########################################"
+	@echo "#######################################"
 
 $(SYNCED_CLI_OBJ_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
@@ -329,26 +281,37 @@ $(SYNCED_CLI): $(SYNCED_CLI_OBJS)
 # Target: help
 .PHONY: help
 help:
-	@echo "###########################################"
+	@echo "#########################################"
 	@echo "#"
-	@echo "# S Y N C E 4 L   M A K E F I L E   H E L P"
+	@echo "# S Y N C E D   M A K E F I L E   H E L P"
 	@echo "#"
-	@echo "###########################################"
+	@echo "#########################################"
 	@echo "Makefile for synced program"
 	@echo "  Makefile targets:"
-	@echo "    all            - Clean build artifacts, build synced binary executable, and build synced_cli binary executable"
-	@echo "    clean          - Clean build artifacts"
-	@echo "    help           - Display Makefile commands"
-	@echo "    synced         - Build synced binary executable"
-	@echo "    synced_cli     - Build synced_cli binary executable"
+	@echo "    all               - Clean build artifacts, build synced binary executable, and build synced_cli binary executable"
+	@echo "    clean             - Clean build artifacts"
+	@echo "    help              - Display Makefile commands"
+	@echo "    synced            - Build synced binary executable"
+	@echo "    synced_cli        - Build synced_cli binary executable"
 	@echo "  Makefile command line variables:"
-	@echo "    CROSS_COMPILE  - Cross-compiler"
-	@echo "                       e.g. Compile for ARM64: CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-"
-	@echo "    USER_CFLAGS    - User-defined compiler flag(s)"
-	@echo "                       e.g. Compile with C99 standard: USER_CFLAGS=-std=c99"
-	@echo "                       e.g. Enable debug mode: USER_CFLAGS=-DSYNCED_DEBUG_MODE"
-	@echo "                       e.g. Compile with C99 standard and enable debug mode: USER_CFLAGS=\"-std=c99 -DSYNCED_DEBUG_MODE\""
-	@echo "    USER_LDFLAGS   - User-defined linker flag(s)"
-	@echo "                       e.g. Link C math library: USER_LDFLAGS=-lm"
-	@echo "                       e.g. Link C thread library: USER_LDFLAGS=-lpthread"
-	@echo "                       e.g. Link C math and thread libraries: USER_LDFLAGS=\"-lm -lpthread\""
+	@echo "    ESMC_STACK        - ESMC stack type"
+	@echo "                          e.g. Use Renesas ESMC stack: ESMC_STACK=renesas"
+	@echo "    PLATFORM          - Platform type"
+	@echo "                          e.g. Target AMD64 platform: ESMC_STACK=amd64"
+	@echo "                          e.g. Target ARM64 platform: ESMC_STACK=arm64"
+	@echo "    CROSS_COMPILE     - Cross-compiler"
+	@echo "                          e.g. Compile for ARM64: CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-"
+	@echo "    DEVICE            - Device"
+	@echo "                          e.g. Employ generic device: DEVICE=generic"
+	@echo "                          e.g. Employ RSMU device: DEVICE=rsmu"
+	@echo "    SYNCED_DEBUG_MODE - Debug mode enable"
+	@echo "                          e.g. Enable debug mode: SYNCED_DEBUG_MODE=1"
+	@echo "                          e.g. Disabled debug mode: SYNCED_DEBUG_MODE=0"
+	@echo "    USER_CFLAGS       - User-defined compiler flag(s)"
+	@echo "                          e.g. Compile with C99 standard: USER_CFLAGS=-std=c99"
+	@echo "                          e.g. Enable debug mode: USER_CFLAGS=-DSYNCED_DEBUG_MODE"
+	@echo "                          e.g. Compile with C99 standard and enable debug mode: USER_CFLAGS=\"-std=c99 -DSYNCED_DEBUG_MODE\""
+	@echo "    USER_LDFLAGS      - User-defined linker flag(s)"
+	@echo "                          e.g. Link C math library: USER_LDFLAGS=-lm"
+	@echo "                          e.g. Link C thread library: USER_LDFLAGS=-lpthread"
+	@echo "                          e.g. Link C math and thread libraries: USER_LDFLAGS=\"-lm -lpthread\""

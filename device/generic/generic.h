@@ -1,6 +1,6 @@
 /**
- * @file i2c.h
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @file generic.h
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,26 +15,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
-#ifndef I2C_H
-#define I2C_H
+#ifndef GENERIC_H
+#define GENERIC_H
 
-#include <stdint.h>
+#include "../device_adaptor/device_adaptor.h"
 
-void i2c_init(const char *i2c_device_name);
-void i2c_deinit(void);
+void generic_register_callbacks(T_device_adaptor_callbacks *device_adaptor_callbacks);
 
-uint32_t i2c_read(void *user_data,
-                  uint32_t address_in_page,
-                  uint8_t *buffer,
-                  uint16_t number_of_bytes);
-uint32_t i2c_write(void *user_data,
-                   uint32_t address_in_page,
-                   uint8_t const *buffer,
-                   uint16_t number_of_bytes);
-
-#endif /* I2C_H */
+#endif /* GENERIC_H */

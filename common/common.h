@@ -1,6 +1,6 @@
 /**
  * @file common.h
- * @note Copyright (C) [2021-2022] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 1-0-4
-* Pipeline ID: 125967
-* Commit Hash: 97f7354c
+* Release Tag: 2-0-0
+* Pipeline ID: 219491
+* Commit Hash: c34549a2
 ********************************************************************************************************************/
 
 #ifndef COMMON_H
@@ -29,6 +29,7 @@
 
 #include "types.h"
 #include "../control/sync.h"
+#include "../device/device_adaptor/device_adaptor.h"
 #include "../esmc/esmc_adaptor/esmc_adaptor.h"
 #include "../management/management.h"
 
@@ -44,10 +45,10 @@
 
 #define MAX_CLK_ID_LEN   8
 
-#define MAX_NUM_PORTS   32
+#define MAX_NUM_OF_PORTS   32
 
 /* Maximum number of clocks going into device (includes external clock ports) */
-#define MAX_NUM_OF_CLOCKS   16
+#define MAX_NUM_OF_CLOCKS   32
 
 #define MAX_NUM_OF_PRIORITIES   256
 
