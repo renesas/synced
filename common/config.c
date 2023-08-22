@@ -651,7 +651,7 @@ int config_read(const char *name,
           goto parse_error;
         }
 
-        strncpy(g_config_port_name[port_counter - 1], port, sizeof(port));
+        strncpy(g_config_port_name[port_counter - 1], port, strlen(port) + 1);
       }
 
       continue;
