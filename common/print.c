@@ -66,11 +66,11 @@ void print_set_syslog_en(int value)
   g_syslog_en = value ? 1 : 0;
 }
 
-void print(int level, char const *format, ...)
+void print(int level, int timestamp_en, char const *format, ...)
 {
   struct timespec ts;
   va_list ap;
-  char buf[1024];
+  char buf[PRINT_BUFFER_SIZE];
   FILE *fp;
 
   if(level > g_pr_level)
@@ -84,21 +84,27 @@ void print(int level, char const *format, ...)
 
   if(g_stdout_en) {
     fp = level >= LOG_NOTICE ? stdout : stderr;
-#if (SYNCED_CLI_PRINT == 1)
-    fprintf(fp, "\t%s\n", buf);
-#else
-    fprintf(fp, "%s[%lld.%03ld]: %s%s%s\n",
-            g_print_prog_name ? g_print_prog_name : "",
-            (long long)ts.tv_sec, ts.tv_nsec / 1000000,
-            g_msg_tag ? g_msg_tag : "", g_msg_tag ? " " : "",
-            buf);
+    if(timestamp_en) {
+      fprintf(fp, "%s[%lld.%03ld]: %s%s%s\n",
+              g_print_prog_name ? g_print_prog_name : "",
+              (long long)ts.tv_sec, ts.tv_nsec / 1000000,
+              g_msg_tag ? g_msg_tag : "", g_msg_tag ? " " : "",
+              buf);
+    } else {
+      fprintf(fp, "%s",
+              buf);
+    }
     fflush(fp);
-#endif
   }
   if(g_syslog_en) {
-    syslog(level, "[%lld.%03ld] %s%s%s",
-           (long long)ts.tv_sec, ts.tv_nsec / 1000000,
-           g_msg_tag ? g_msg_tag : "", g_msg_tag ? " " : "",
-           buf);
+    if(timestamp_en) {
+      syslog(level, "[%lld.%03ld] %s%s%s",
+             (long long)ts.tv_sec, ts.tv_nsec / 1000000,
+             g_msg_tag ? g_msg_tag : "", g_msg_tag ? " " : "",
+             buf);
+    } else {
+      syslog(level, "%s",
+             buf);
+    }
   }
 }

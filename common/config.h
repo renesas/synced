@@ -53,7 +53,7 @@ enum config_parser_result {
 };
 
 /* General configuration functions */
-int config_read(const char *name, struct config *cfg);
+int config_read(const char *name, struct config *cfg, char **dump_buf, long *dump_buf_size);
 struct interface *config_create_interface(const char *name, struct config *cfg);
 void config_destroy(struct config *cfg);
 

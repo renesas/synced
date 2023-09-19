@@ -31,19 +31,25 @@
 #define PRINT_LEVEL_MIN   LOG_EMERG
 #define PRINT_LEVEL_MAX   LOG_DEBUG
 
-#ifdef __GNUC__
-__attribute__ ((format (printf, 2, 3)))
-#endif
-void print(int level, char const *format, ...);
+#define TS_ENABLE    1
+#define TS_DISABLE   0
 
-#define pr_emerg(...)     print(LOG_EMERG, __VA_ARGS__)
-#define pr_alert(...)     print(LOG_ALERT, __VA_ARGS__)
-#define pr_crit(...)      print(LOG_CRIT, __VA_ARGS__)
-#define pr_err(...)       print(LOG_ERR, __VA_ARGS__)
-#define pr_warning(...)   print(LOG_WARNING, __VA_ARGS__)
-#define pr_notice(...)    print(LOG_NOTICE, __VA_ARGS__)
-#define pr_info(...)      print(LOG_INFO, __VA_ARGS__)
-#define pr_debug(...)     print(LOG_DEBUG, __VA_ARGS__)
+#ifdef __GNUC__
+__attribute__ ((format (printf, 3, 4)))
+#endif
+void print(int level, int timestamp_en, char const *format, ...);
+
+#define pr_emerg(...)       print(LOG_EMERG, TS_ENABLE, __VA_ARGS__)
+#define pr_alert(...)       print(LOG_ALERT, TS_ENABLE, __VA_ARGS__)
+#define pr_crit(...)        print(LOG_CRIT, TS_ENABLE, __VA_ARGS__)
+#define pr_err(...)         print(LOG_ERR, TS_ENABLE, __VA_ARGS__)
+#define pr_warning(...)     print(LOG_WARNING, TS_ENABLE, __VA_ARGS__)
+#define pr_notice(...)      print(LOG_NOTICE, TS_ENABLE, __VA_ARGS__)
+#define pr_info(...)        print(LOG_INFO, TS_ENABLE, __VA_ARGS__)
+#define pr_info_dump(...)   print(LOG_INFO, TS_DISABLE, __VA_ARGS__)
+#define pr_debug(...)       print(LOG_DEBUG, TS_ENABLE, __VA_ARGS__)
+
+#define PRINT_BUFFER_SIZE 1024
 
 void print_set_prog_name(const char *name);
 void print_set_msg_tag(const char *tag);

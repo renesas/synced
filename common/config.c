@@ -575,7 +575,9 @@ static struct option *config_alloc_longopts(void)
 /* Global functions */
 
 int config_read(const char *name,
-                struct config *cfg)
+                struct config *cfg,
+                char **dump_buf,
+                long *dump_buf_size)
 {
   enum config_section current_section = UNKNOWN_SECTION;
   enum config_parser_result parser_res;
@@ -585,11 +587,54 @@ int config_read(const char *name,
   struct interface *current_port = NULL;
   int line_num;
   int i;
-  int port_counter = 0;
+  int port_counter = 0; /* Should not exceed MAX_NUM_OF_SYNC_ENTRIES */
+  const long init_pos = 0;
+  long file_size;
+  long num_bytes_read;
+
+  *dump_buf = NULL;
+  *dump_buf_size = 0;
 
   fp = 0 == strncmp(name, "-", 2) ? stdin : fopen(name, "r");
 
   if(!fp) {
+    fprintf(stderr, "Failed to fopen file %s\n", name);
+    return -1;
+  }
+
+  /* Dump file */
+  if(fseek(fp, init_pos, SEEK_END)) {
+    fprintf(stderr, "Failed to fseek (SEEK_END) file %s\n", name);
+    return -1;
+  }
+  file_size = ftell(fp) + 1; /* Add 1 to account for null character */
+  if(file_size < 0) {
+    fprintf(stderr, "Failed to ftell file %s\n", name);
+    return -1;
+  }
+  if(fseek(fp, init_pos, SEEK_SET)) {
+    fprintf(stderr, "Failed to fseek (SEEK_SET) file %s\n", name);
+    return -1;
+  }
+  *dump_buf = calloc(1, file_size * sizeof(char));
+  if(*dump_buf == NULL) {
+
+    fprintf(stderr, "Failed to allocate memory for file %s dump\n", name);
+    return -1;
+  }
+  num_bytes_read = fread(*dump_buf, sizeof(char), file_size, fp);
+  if(num_bytes_read != (file_size - 1)) {
+    fprintf(stderr, "Failed to fread file %s\n", name);
+    free(*dump_buf);
+    *dump_buf = NULL;
+    return -1;
+  }
+  *dump_buf_size = file_size;
+  if(fseek(fp, init_pos, SEEK_SET)) {
+    fprintf(stderr, "Failed to fseek (SEEK_SET) file %s\n", name);
+    free(*dump_buf);
+    *dump_buf = NULL;
+    *dump_buf_size = 0;
     return -1;
   }
 
@@ -715,6 +760,9 @@ int config_read(const char *name,
 parse_error:
   fprintf(stderr, "Failed to parse configuration file %s\n", name);
   fclose(fp);
+  free(*dump_buf);
+  *dump_buf = NULL;
+  *dump_buf_size = 0;
   return -1;
 }
 
