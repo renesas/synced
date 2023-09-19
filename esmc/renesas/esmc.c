@@ -826,7 +826,7 @@ int esmc_init_stack(T_esmc_network_option net_opt, T_esmc_ql init_ql, T_esmc_ql 
   esmc->best_ext_ql_tlv_data.num_cascaded_eEEC = 1;
   esmc->best_ext_ql_tlv_data.num_cascaded_EEC = 0;
   esmc->best_port_num = INVALID_PORT_NUM;
-  esmc->port_tx_bundle_bitmap = 0;
+  esmc->port_tx_bundle_info.num_ports = 0;
 
   if(os_mutex_init(&esmc->best_ql_mutex) < 0) {
     goto err;
@@ -1017,7 +1017,7 @@ void esmc_destroy_rx_ports(void)
   esmc->num_rx_ports = 0;
 }
 
-void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, unsigned long long port_tx_bundle_bitmap)
+void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, T_port_tx_bundle_info *port_tx_bundle_info)
 {
   T_esmc *esmc = &g_esmc;
 
@@ -1027,7 +1027,7 @@ void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, unsigned long
   os_mutex_lock(&esmc->best_ql_mutex);
   esmc->best_ql = best_ql;
   esmc->best_port_num = best_port_num;
-  esmc->port_tx_bundle_bitmap = port_tx_bundle_bitmap;
+  memcpy(&esmc->port_tx_bundle_info, port_tx_bundle_info, sizeof(*port_tx_bundle_info));
 
   if(best_port_num == INVALID_PORT_NUM) {
     /* Best clock is external clock or LO */
@@ -1087,7 +1087,6 @@ int esmc_compose_pdu(T_esmc_pdu *msg, T_esmc_pdu_type msg_type, unsigned char sr
   T_esmc *esmc = &g_esmc;
   T_esmc_network_option net_opt = esmc->net_opt;
   T_port_num best_port_num = esmc->best_port_num;
-  unsigned long long tx_bundle_bitmap = esmc->port_tx_bundle_bitmap;
   T_esmc_ql do_not_use_ql = esmc->do_not_use_ql;
 
   T_esmc_ql best_ql;
@@ -1098,11 +1097,17 @@ int esmc_compose_pdu(T_esmc_pdu *msg, T_esmc_pdu_type msg_type, unsigned char sr
   unsigned char e_ssm_code;
   int off;
 
-  if(((tx_bundle_bitmap >> port_num) & 1) != 0) {
-    best_ql = do_not_use_ql;
-  } else {
-    best_ql = esmc->best_ql;
+  int i;
+
+  os_mutex_lock(&esmc->best_ql_mutex);
+  best_ql = esmc->best_ql;
+  for(i = 0; i < esmc->port_tx_bundle_info.num_ports; i++) {
+    if(port_num == esmc->port_tx_bundle_info.port_nums[i]) {
+      best_ql = do_not_use_ql;
+      break;
+    }
   }
+  os_mutex_unlock(&esmc->best_ql_mutex);
 
   *composed_ql = best_ql;
 

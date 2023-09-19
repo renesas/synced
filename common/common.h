@@ -45,7 +45,7 @@
 
 #define MAX_CLK_ID_LEN   8
 
-#define MAX_NUM_OF_PORTS   32
+#define MAX_NUM_OF_SYNC_ENTRIES   64
 
 /* Maximum number of clocks going into device (includes external clock ports) */
 #define MAX_NUM_OF_CLOCKS   32

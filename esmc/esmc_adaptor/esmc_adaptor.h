@@ -28,6 +28,8 @@
 
 #include "../../common/types.h"
 
+#define ESMC_MAX_NUMBER_OF_PORTS   32
+
 typedef struct {
   const char *name;
   T_port_num port_num;

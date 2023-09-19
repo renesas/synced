@@ -179,6 +179,11 @@ typedef enum {
 } T_esmc_state;
 
 typedef struct {
+  int num_ports;
+  T_port_num port_nums[ESMC_MAX_NUMBER_OF_PORTS];
+} T_port_tx_bundle_info;
+
+typedef struct {
   T_esmc_network_option net_opt;
   T_esmc_ql init_ql;
   T_esmc_ql do_not_use_ql;
@@ -187,7 +192,7 @@ typedef struct {
   T_esmc_ql best_ql;
   T_port_ext_ql_tlv_data best_ext_ql_tlv_data;
   T_port_num best_port_num;
-  unsigned long long port_tx_bundle_bitmap;
+  T_port_tx_bundle_info port_tx_bundle_info;
   pthread_mutex_t best_ql_mutex;
   pthread_cond_t best_ql_cond;
 
@@ -246,7 +251,7 @@ int esmc_reg_rx_cb(T_esmc_rx_event_cb event_cb);
 int esmc_call_tx_cb(T_esmc_tx_event_cb_data *cb_data);
 int esmc_call_rx_cb(T_esmc_rx_event_cb_data *cb_data);
 
-void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, unsigned long long port_tx_bundle_bitmap);
+void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, T_port_tx_bundle_info *port_tx_bundle_info);
 
 int esmc_compose_pdu(T_esmc_pdu *msg, T_esmc_pdu_type msg_type, unsigned char src_mac_addr[ETH_ALEN], T_port_ext_ql_tlv_data const *best_ext_ql_tlv_data, T_port_num port_num, T_esmc_ql *composed_ql);
 int esmc_parse_pdu(T_esmc_pdu *msg, int *enhanced_flag, T_esmc_ql *parsed_ql, T_port_ext_ql_tlv_data *parsed_ext_ql_tlv_data);
