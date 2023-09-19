@@ -587,7 +587,7 @@ int config_read(const char *name,
   struct interface *current_port = NULL;
   int line_num;
   int i;
-  int port_counter = 0; /* Should not exceed MAX_NUM_OF_SYNC_ENTRIES */
+  int port_counter = 0;
   const long init_pos = 0;
   long file_size;
   long num_bytes_read;
