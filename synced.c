@@ -370,6 +370,35 @@ static int create_monitor_config(struct config *cfg, T_esmc_network_option net_o
   return 0;
 }
 
+int dump_cfg_file(char *cfg_file_dump, long cfg_file_dump_size)
+{
+  char *dump_start;
+  char *current_character;
+  char *line_start;
+  char *line_end;
+
+  if(cfg_file_dump != NULL) {
+    dump_start = cfg_file_dump;
+    current_character = cfg_file_dump;
+    line_start = cfg_file_dump;
+    line_end = NULL;
+
+    while(current_character - dump_start != cfg_file_dump_size) {
+      if(*current_character == '\n') {
+        line_end = current_character;
+        pr_info_dump("%.*s", (int)(line_end - line_start), line_start);
+        line_start = current_character;
+      }
+      current_character++;
+    }
+    pr_info_dump("\n");
+
+    return 0;
+  }
+
+  return -1;
+}
+
 /* Global functions */
 
 int main(int argc, char *argv[])
@@ -383,9 +412,11 @@ int main(int argc, char *argv[])
   int idx;
 
   /* Configuration interface */
-  char *cfg_file = NULL;
+  char *cfg_file_name = NULL;
   struct option *opts;
   struct config *cfg;
+  char *cfg_file_dump = NULL;
+  long cfg_file_dump_size = 0;
 
   /* Message logging */
   int print_level;
@@ -473,7 +504,7 @@ int main(int argc, char *argv[])
         printf("Set %s to %d through command-line interface\n", "net_opt", E_esmc_network_option_3);
         break;
       case 'f':
-        cfg_file = optarg;
+        cfg_file_name = optarg;
         break;
       case 'h':
         usage(prog_name);
@@ -517,8 +548,8 @@ int main(int argc, char *argv[])
   }
 
   /* If specified, read and parse configuration file */
-  if((cfg_file != NULL) && (config_read(cfg_file, cfg) < 0)) {
-    fprintf(stderr, "Failed to read %s\n", cfg_file);
+  if((cfg_file_name != NULL) && (config_read(cfg_file_name, cfg, &cfg_file_dump, &cfg_file_dump_size) < 0)) {
+    fprintf(stderr, "Failed to read %s\n", cfg_file_name);
     goto quick_end;
   }
 
@@ -544,7 +575,13 @@ int main(int argc, char *argv[])
 
   pr_info("---Started %s (version: %s.%s.%s %s %s)---", prog_name, g_version, g_pipeline, g_commit, __DATE__, __TIME__);
 
-  pr_info("Opened configuration file %s", cfg_file);
+  pr_info("Opened configuration file %s:", cfg_file_name);
+  if(dump_cfg_file(cfg_file_dump, cfg_file_dump_size) < 0) {
+    pr_err("Failed to dump configuration file");
+    free(cfg_file_dump);
+    goto quick_end;
+  }
+  free(cfg_file_dump);
 
   net_opt = config_get_int(cfg, "global", "net_opt");
   no_ql_en = config_get_int(cfg, "global", "no_ql_en");
