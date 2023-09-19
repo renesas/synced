@@ -137,7 +137,7 @@ struct config_esmc_ql {
 
 /* Static data */
 
-static char g_config_port_name[MAX_NUM_OF_PORTS][INTERFACE_MAX_NAME_LEN];
+static char g_config_port_name[MAX_NUM_OF_SYNC_ENTRIES][INTERFACE_MAX_NAME_LEN];
 static int g_config_clk_idx_flag[MAX_NUM_OF_CLOCKS] = {0};
 static int g_config_pri_flag[MAX_NUM_OF_PRIORITIES] = {0};
 
@@ -587,7 +587,7 @@ int config_read(const char *name,
   struct interface *current_port = NULL;
   int line_num;
   int i;
-  int port_counter = 0;
+  int port_counter = 0; /* Should not exceed MAX_NUM_OF_SYNC_ENTRIES */
   const long init_pos = 0;
   long file_size;
   long num_bytes_read;
@@ -661,11 +661,11 @@ int config_read(const char *name,
         char port[INTERFACE_MAX_NAME_LEN];
 
         port_counter++;
-        if(port_counter > MAX_NUM_OF_PORTS) {
+        if(port_counter > MAX_NUM_OF_SYNC_ENTRIES) {
           fprintf(stderr,
                   "Failed to parse configuration on line %d because maximum number of ports %d reached\n",
                   line_num,
-                  MAX_NUM_OF_PORTS);
+                  MAX_NUM_OF_SYNC_ENTRIES);
           goto parse_error;
         }
 
@@ -684,7 +684,7 @@ int config_read(const char *name,
           goto parse_error;
         }
 
-        for(i = 0; i < MAX_NUM_OF_PORTS; i++) {
+        for(i = 0; i < MAX_NUM_OF_SYNC_ENTRIES; i++) {
           if(!strcmp(port, g_config_port_name[i])) {
             fprintf(stderr, "Failed to parse configuration for port %s on line %d because name already used\n", port, line_num);
             goto parse_error;

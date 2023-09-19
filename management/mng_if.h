@@ -26,7 +26,7 @@
 #include "../common/common.h"
 #include "management.h"
 
-#define MAX_SYNC_INFO_STRUCTURES   MAX_NUM_OF_PORTS
+#define MAX_SYNC_INFO_STRUCTURES   MAX_NUM_OF_SYNC_ENTRIES
 
 /* CLI request structures */
 typedef struct {
