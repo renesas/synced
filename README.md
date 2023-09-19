@@ -14,12 +14,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 2-0-1
-<br>Pipeline ID: 225169
-<br>Commit Hash: 9fa7e3cd
+Release Tag: 2-0-2
+<br>Pipeline ID: 233453
+<br>Commit Hash: 548f9660
 ***
 
-# `synced` 2-0-1 README
+# `synced` 2-0-2 README
 
 `synced` is a user space Synchronous Ethernet (Sync-E) stack for the Linux operating system.
 
