@@ -402,13 +402,14 @@ int control_init(T_control_config const *control_config)
 
     if(g_control_data.no_ql_en && (sync_entry->type == E_sync_type_external)) {
       /* If no QL mode is enabled and sync is external clock port, then force initial and current QL to LO QL */
-      sync_entry->init_ql = g_control_data.lo_ql;
-      sync_entry->current_ql = g_control_data.lo_ql;
+      init_ql = g_control_data.lo_ql;
     } else {
       init_ql = sync_config->init_ql;
-      sync_entry->init_ql = init_ql;
-      sync_entry->current_ql = init_ql;
     }
+
+    sync_entry->init_ql = init_ql;
+
+    sync_entry->current_ql = init_ql;
 
     sync_entry->esmc_ql = init_ql;
 
