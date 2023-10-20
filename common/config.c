@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <ctype.h>
@@ -244,6 +244,7 @@ static struct config_item g_config_table[] = {
   GLOB_ITEM_INT("holdover_tmr", 300, 0, INT32_MAX),                                /* Seconds */
   GLOB_ITEM_INT("hoff_tmr", 300, 0, INT16_MAX),                                    /* Milliseconds */
   GLOB_ITEM_INT("wtr_tmr", 300, 0, INT16_MAX),                                     /* Seconds */
+  GLOB_ITEM_INT("advanced_holdover_en", 0, 0, 1),
   GLOB_ITEM_INT("pcm4l_if_en", 0, 0, 1),
   GLOB_ITEM_STR("pcm4l_if_ip_addr", ""),
   GLOB_ITEM_INT("pcm4l_if_port_num", 2400, 1024, UINT16_MAX),

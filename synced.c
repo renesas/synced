@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -50,9 +50,9 @@
 #error __linux__ is not defined!
 #endif /* __linux__ */
 
-#define VERSION_ID    "2.0.2"
-#define PIPELINE_ID   "233453"
-#define COMMIT_ID     "548f9660"
+#define VERSION_ID    "2.0.3"
+#define PIPELINE_ID   "246016"
+#define COMMIT_ID     "3db24a10"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 
@@ -79,7 +79,7 @@ static void usage(char *prog_name)
           "  -2 Configure ESMC to handle network option 2 clocks.\n"
           "  -3 Configure ESMC to handle network option 3 clocks.\n"
           "  -f [file] Read configuration from 'file'.\n"
-          "  -h Display command line options (i.e. print this message).\n"
+          "  -h Display command-line options (i.e. print this message).\n"
           "  -l [level] Set maximum message level to 'level'.\n"
           "  -o Enable printing of messages to stdout.\n"
           "  -s Enable logging of messages to syslog.\n"
@@ -366,6 +366,9 @@ static int create_monitor_config(struct config *cfg, T_esmc_network_option net_o
 
   monitor_config->holdover_timer_s = config_get_int(cfg, "global", "holdover_tmr");
   pr_info("Set holdover timer to %u seconds", monitor_config->holdover_timer_s);
+
+  monitor_config->advanced_holdover_en = config_get_int(cfg, "global", "advanced_holdover_en");
+  pr_info("Set advanced holdover enable to %u", monitor_config->advanced_holdover_en);
 
   return 0;
 }

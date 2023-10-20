@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <stdio.h>
@@ -326,69 +326,69 @@ int calculate_rank(int ql, unsigned char priority, unsigned char hops)
 
 void print_sync_info(T_management_sync_info *sync_info)
 {
-  pr_info("  [%s]", sync_info->name);
-  pr_info("    Type: %s", conv_sync_type_enum_to_str(sync_info->type));
+  pr_info_dump("  [%s]\n", sync_info->name);
+  pr_info_dump("    Type: %s\n", conv_sync_type_enum_to_str(sync_info->type));
   switch(sync_info->type) {
     case E_sync_type_synce:
-      pr_info("    Configured priority: %d", sync_info->synce_clk_info.config_pri);
-      pr_info("    Current QL: %s", conv_ql_enum_to_str(sync_info->synce_clk_info.current_ql));
-      pr_info("    State: %s", conv_sync_state_enum_to_str(sync_info->synce_clk_info.state));
+      pr_info_dump("    Configured priority: %d\n", sync_info->synce_clk_info.config_pri);
+      pr_info_dump("    Current QL: %s\n", conv_ql_enum_to_str(sync_info->synce_clk_info.current_ql));
+      pr_info_dump("    State: %s\n", conv_sync_state_enum_to_str(sync_info->synce_clk_info.state));
       if(sync_info->synce_clk_info.tx_bundle_num >= 0) {
-        pr_info("    TX bundle number: %d", sync_info->synce_clk_info.tx_bundle_num);
+        pr_info_dump("    TX bundle number: %d\n", sync_info->synce_clk_info.tx_bundle_num);
       }
-      pr_info("    Clock index: %d", sync_info->synce_clk_info.clk_idx);
+      pr_info_dump("    Clock index: %d\n", sync_info->synce_clk_info.clk_idx);
       if((sync_info->synce_clk_info.state == E_sync_state_hold_off) ||
          (sync_info->synce_clk_info.state == E_sync_state_wait_to_restore)) {
-        pr_info("    Remaining time: %u ms", sync_info->synce_clk_info.remaining_time_ms);
+        pr_info_dump("    Remaining time: %u ms\n", sync_info->synce_clk_info.remaining_time_ms);
       }
-      pr_info("    Number of hops: %d", sync_info->synce_clk_info.current_num_hops);
-      pr_info("    Rank: 0x%06X", sync_info->synce_clk_info.rank);
-      pr_info("    Reference monitor status: %s", conv_sync_clk_state_enum_to_str(sync_info->synce_clk_info.clk_state));
+      pr_info_dump("    Number of hops: %d\n", sync_info->synce_clk_info.current_num_hops);
+      pr_info_dump("    Rank: 0x%06X\n", sync_info->synce_clk_info.rank);
+      pr_info_dump("    Reference monitor status: %s\n", conv_sync_clk_state_enum_to_str(sync_info->synce_clk_info.clk_state));
       if(sync_info->synce_clk_info.clk_state == E_sync_clk_state_unqualified) {
-        pr_info("      Frequency offset alarm: %d", sync_info->synce_clk_info.ref_mon_status.frequency_offset_alarm_status);
-        pr_info("      No activity alarm: %d", sync_info->synce_clk_info.ref_mon_status.no_activity_alarm_status);
-        pr_info("      Loss of signal alarm: %d", sync_info->synce_clk_info.ref_mon_status.loss_of_signal_alarm_status);
+        pr_info_dump("      Frequency offset alarm: %d\n", sync_info->synce_clk_info.ref_mon_status.frequency_offset_alarm_status);
+        pr_info_dump("      No activity alarm: %d\n", sync_info->synce_clk_info.ref_mon_status.no_activity_alarm_status);
+        pr_info_dump("      Loss of signal alarm: %d\n", sync_info->synce_clk_info.ref_mon_status.loss_of_signal_alarm_status);
       }
-      pr_info("    RX timeout: %s", sync_info->synce_clk_info.rx_timeout_flag ? "yes" : "no");
-      pr_info("    Port link: %s", sync_info->synce_clk_info.port_link_down_flag ? "down" : "up");
+      pr_info_dump("    RX timeout: %s\n", sync_info->synce_clk_info.rx_timeout_flag ? "yes" : "no");
+      pr_info_dump("    Port link: %s\n", sync_info->synce_clk_info.port_link_down_flag ? "down" : "up");
       break;
 
     case E_sync_type_monitoring:
-      pr_info("    Configured priority: %d", sync_info->synce_mon_info.config_pri);
-      pr_info("    Current QL: %s", conv_ql_enum_to_str(sync_info->synce_mon_info.current_ql));
-      pr_info("    State: %s", conv_sync_state_enum_to_str(sync_info->synce_mon_info.state));
+      pr_info_dump("    Configured priority: %d\n", sync_info->synce_mon_info.config_pri);
+      pr_info_dump("    Current QL: %s\n", conv_ql_enum_to_str(sync_info->synce_mon_info.current_ql));
+      pr_info_dump("    State: %s\n", conv_sync_state_enum_to_str(sync_info->synce_mon_info.state));
       if(sync_info->synce_mon_info.tx_bundle_num >= 0) {
-        pr_info("    TX bundle number: %d", sync_info->synce_mon_info.tx_bundle_num);
+        pr_info_dump("    TX bundle number: %d\n", sync_info->synce_mon_info.tx_bundle_num);
       }
       if((sync_info->synce_mon_info.state == E_sync_state_hold_off) ||
           (sync_info->synce_mon_info.state == E_sync_state_wait_to_restore)) {
-        pr_info("    Remaining time: %u ms", sync_info->synce_mon_info.remaining_time_ms);
+        pr_info_dump("    Remaining time: %u ms\n", sync_info->synce_mon_info.remaining_time_ms);
       }
-      pr_info("    Number of hops: %d", sync_info->synce_mon_info.current_num_hops);
-      pr_info("    Rank: 0x%06X", sync_info->synce_mon_info.rank);
-      pr_info("    RX timeout: %s", sync_info->synce_mon_info.rx_timeout_flag ? "yes" : "no");
-      pr_info("    Port link: %s", sync_info->synce_mon_info.port_link_down_flag ? "down" : "up");
+      pr_info_dump("    Number of hops: %d\n", sync_info->synce_mon_info.current_num_hops);
+      pr_info_dump("    Rank: 0x%06X\n", sync_info->synce_mon_info.rank);
+      pr_info_dump("    RX timeout: %s\n", sync_info->synce_mon_info.rx_timeout_flag ? "yes" : "no");
+      pr_info_dump("    Port link: %s\n", sync_info->synce_mon_info.port_link_down_flag ? "down" : "up");
       break;
 
     case E_sync_type_external:
-      pr_info("    Configured priority: %d", sync_info->ext_clk_info.config_pri);
-      pr_info("    Current QL: %s", conv_ql_enum_to_str(sync_info->ext_clk_info.current_ql));
-      pr_info("    State: %s", conv_sync_state_enum_to_str(sync_info->ext_clk_info.state));
-      pr_info("    Clock index: %d", sync_info->ext_clk_info.clk_idx);
-      pr_info("    Rank: 0x%06X", sync_info->ext_clk_info.rank);
-      pr_info("    Reference monitor status: %s", conv_sync_clk_state_enum_to_str(sync_info->ext_clk_info.clk_state));
+      pr_info_dump("    Configured priority: %d\n", sync_info->ext_clk_info.config_pri);
+      pr_info_dump("    Current QL: %s\n", conv_ql_enum_to_str(sync_info->ext_clk_info.current_ql));
+      pr_info_dump("    State: %s\n", conv_sync_state_enum_to_str(sync_info->ext_clk_info.state));
+      pr_info_dump("    Clock index: %d\n", sync_info->ext_clk_info.clk_idx);
+      pr_info_dump("    Rank: 0x%06X\n", sync_info->ext_clk_info.rank);
+      pr_info_dump("    Reference monitor status: %s\n", conv_sync_clk_state_enum_to_str(sync_info->ext_clk_info.clk_state));
       if(sync_info->ext_clk_info.clk_state == E_sync_clk_state_unqualified) {
-        pr_info("      Frequency offset alarm: %d", sync_info->ext_clk_info.ref_mon_status.frequency_offset_alarm_status);
-        pr_info("      No activity alarm: %d", sync_info->ext_clk_info.ref_mon_status.no_activity_alarm_status);
-        pr_info("      Loss of signal alarm: %d", sync_info->ext_clk_info.ref_mon_status.loss_of_signal_alarm_status);
+        pr_info_dump("      Frequency offset alarm: %d\n", sync_info->ext_clk_info.ref_mon_status.frequency_offset_alarm_status);
+        pr_info_dump("      No activity alarm: %d\n", sync_info->ext_clk_info.ref_mon_status.no_activity_alarm_status);
+        pr_info_dump("      Loss of signal alarm: %d\n", sync_info->ext_clk_info.ref_mon_status.loss_of_signal_alarm_status);
       }
       break;
 
     case E_sync_type_tx_only:
       if(sync_info->synce_tx_only_info.tx_bundle_num >= 0) {
-        pr_info("    TX bundle number: %d", sync_info->synce_tx_only_info.tx_bundle_num);
+        pr_info_dump("    TX bundle number: %d\n", sync_info->synce_tx_only_info.tx_bundle_num);
       }
-      pr_info("    Port link: %s", sync_info->synce_tx_only_info.port_link_down_flag ? "down" : "up");
+      pr_info_dump("    Port link: %s\n", sync_info->synce_tx_only_info.port_link_down_flag ? "down" : "up");
       break;
 
     default:
@@ -398,16 +398,16 @@ void print_sync_info(T_management_sync_info *sync_info)
 
 void print_current_status(T_management_status *status)
 {
-  pr_info("  Current QL: %s", conv_ql_enum_to_str(status->current_ql));
-  pr_info("  Sync-E DPLL state: %s", conv_synce_dpll_state_enum_to_str(status->dpll_state));
+  pr_info_dump("  Current QL: %s\n", conv_ql_enum_to_str(status->current_ql));
+  pr_info_dump("  Sync-E DPLL state: %s\n", conv_synce_dpll_state_enum_to_str(status->dpll_state));
 
   if(status->clk_idx < 0) {
-    pr_info("  Selected clock: LO");
+    pr_info_dump("  Selected clock: LO\n");
     if(status->dpll_state == E_device_dpll_state_holdover) {
-      pr_info("  Holdover remaining time: %u ms", status->holdover_remaining_time_ms);
+      pr_info_dump("  Holdover remaining time: %u ms\n", status->holdover_remaining_time_ms);
     }
   } else {
-    pr_info("  Selected port: %s", status->port_name);
-    pr_info("  Selected clock index: %d", status->clk_idx);
+    pr_info_dump("  Selected port: %s\n", status->port_name);
+    pr_info_dump("  Selected clock index: %d\n", status->clk_idx);
   }
 }

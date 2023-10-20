@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <limits.h>
@@ -35,7 +35,9 @@
 #include "../monitor/monitor.h"
 
 /*
- * This macro definition enables a generic code
+ * External Mux Control:
+ *
+ * ENABLE_EXTERNAL_MUX_CONTROL enables a generic code
  * to control multiple external muxes
  * with multiple ports as inputs and up to two outputs.
  *           Mux
@@ -228,11 +230,11 @@ static void management_template_notify_synce_dpll_current_state(T_device_dpll_st
   pr_info("Current Sync-E DPLL state changed to %s", conv_synce_dpll_state_enum_to_str(synce_dpll_state));
 }
 
-static void management_template_notify_sync_current_clk_state(const char *port_name, T_sync_clk_state clk_state)
+static void management_template_notify_sync_current_clk_state(const char *port_name, int clk_idx, T_sync_clk_state clk_state)
 {
   /* This function is a template; the user must implement their own code here or register their own functions using management_init(). */
 
-  pr_info("Current clock state for port %s changed to %s", port_name, conv_sync_clk_state_enum_to_str(clk_state));
+  pr_info("State of clock index %d associated with port %s changed to %s", clk_idx, port_name, conv_sync_clk_state_enum_to_str(clk_state));
 }
 
 static void management_template_notify_sync_current_state(const char *port_name, T_sync_state state)
@@ -362,14 +364,14 @@ void management_call_notify_synce_dpll_current_state_cb(T_device_dpll_state sync
   }
 }
 
-void management_call_notify_sync_current_clk_state_cb(const char *port_name, T_sync_clk_state clk_state)
+void management_call_notify_sync_current_clk_state_cb(const char *port_name, int clk_idx, T_sync_clk_state clk_state)
 {
   if(port_name == NULL) {
     return;
   }
 
   if(g_management_callbacks.notify_sync_current_clk_state != NULL) {
-    g_management_callbacks.notify_sync_current_clk_state(port_name, clk_state);
+    g_management_callbacks.notify_sync_current_clk_state(port_name, clk_idx, clk_state);
   }
 }
 

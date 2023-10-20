@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #ifndef MONITOR_H
@@ -31,10 +31,14 @@ typedef struct {
   T_esmc_ql lo_ql;
   T_esmc_ql holdover_ql;
   unsigned int holdover_timer_s; /* Seconds */
+  int advanced_holdover_en;
 } T_monitor_config;
 
 typedef struct {
+  T_esmc_ql lo_ql;
+  T_esmc_ql holdover_ql;
   unsigned int holdover_timer_s;                 /* Seconds */
+  int advanced_holdover_en;
   unsigned long long holdover_monotonic_time_ms;
   T_device_dpll_state current_synce_dpll_state;
   T_esmc_ql current_ql;

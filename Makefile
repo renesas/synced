@@ -15,9 +15,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #####################################################################################################################
 #####################################################################################################################
-# Release Tag: 2-0-2
-# Pipeline ID: 233453
-# Commit Hash: 548f9660
+# Release Tag: 2-0-3
+# Pipeline ID: 246016
+# Commit Hash: 3db24a10
 #####################################################################################################################
 
 ###################
@@ -154,7 +154,10 @@ SYNCED_CLI_PREFIXED_DEFINES := $(addprefix -D,$(SYNCED_CLI_DEFINES))
 
 SYNCED_CLI_FILE := synced_cli.c
 
-SYNCED_CLI_SRC_FILES := $(SYNCED_CLI_FILE) $(COMMON_DIR)/common.c $(COMMON_DIR)/print.c
+SYNCED_CLI_SRC_FILES := \
+	$(SYNCED_CLI_FILE) \
+	$(COMMON_DIR)/common.c \
+	$(COMMON_DIR)/print.c
 
 SYNCED_CLI_OBJS := $(patsubst %.c,%.o,$(SYNCED_CLI_SRC_FILES))
 SYNCED_CLI_OBJS := $(addprefix $(SYNCED_CLI_OBJ_DIR)/,$(SYNCED_CLI_OBJS))
