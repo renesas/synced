@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -108,7 +108,6 @@ static int respond_to_request(int conn_fd)
     rsp_msg.api_code = req_msg.api_code;
 
     switch(rsp_msg.api_code) {
-
       case E_mng_api_get_sync_info_list:
       {
         int print_flag = req_msg.request_get_sync_info_list.print_flag;

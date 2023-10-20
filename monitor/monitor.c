@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <string.h>
@@ -33,9 +33,6 @@
 
 /* Static data */
 
-static T_esmc_ql g_lo_ql;
-static T_esmc_ql g_holdover_ql;
-static unsigned int g_holdover_timer_s;
 static pthread_mutex_t g_monitor_mutex;
 static T_monitor_data g_monitor_data;
 
@@ -43,16 +40,17 @@ static T_monitor_data g_monitor_data;
 
 int monitor_init(T_monitor_config const *monitor_config)
 {
-  g_lo_ql = monitor_config->lo_ql;
-  g_holdover_ql = monitor_config->holdover_ql;
-  g_holdover_timer_s = monitor_config->holdover_timer_s;
-
   /* Initialize mutex */
   if(os_mutex_init(&g_monitor_mutex) < 0) {
     return -1;
   }
 
   memset(&g_monitor_data, 0, sizeof(g_monitor_data));
+
+  g_monitor_data.lo_ql = monitor_config->lo_ql;
+  g_monitor_data.holdover_ql = monitor_config->holdover_ql;
+  g_monitor_data.holdover_timer_s = monitor_config->holdover_timer_s;
+  g_monitor_data.advanced_holdover_en = monitor_config->advanced_holdover_en;
 
   g_monitor_data.holdover_monotonic_time_ms = 0;
   g_monitor_data.current_synce_dpll_state = E_device_dpll_state_max;
@@ -122,9 +120,9 @@ void monitor_determine_ql(void)
       return;
     }
 
-    if(ql > g_lo_ql) {
+    if(ql > g_monitor_data.lo_ql) {
       /* Should not happen */
-      pr_warning("%s (%d) is worse than LO QL %s (%d)", conv_ql_enum_to_str(ql), ql, conv_ql_enum_to_str(g_lo_ql), g_lo_ql);
+      pr_warning("%s (%d) is worse than LO QL %s (%d)", conv_ql_enum_to_str(ql), ql, conv_ql_enum_to_str(g_monitor_data.lo_ql), g_monitor_data.lo_ql);
       return;
     }
 
@@ -154,29 +152,35 @@ void monitor_determine_ql(void)
     os_mutex_lock(&g_monitor_mutex);
     if(synce_dpll_state == E_device_dpll_state_freerun) {
       /* Sync-E DPLL is in freerun state (set QL to LO QL) */
-      ql = g_lo_ql;
+      ql = g_monitor_data.lo_ql;
     } else {
       /* Sync-E DPLL is in holdover state */
       if(old_synce_dpll_state == E_device_dpll_state_locked) {
         /* Just entered holdover state from locked state. Start the holdover timer */
-        g_monitor_data.holdover_monotonic_time_ms = os_get_monotonic_milliseconds() + (g_holdover_timer_s * 1000);
+        g_monitor_data.holdover_monotonic_time_ms = os_get_monotonic_milliseconds() + (g_monitor_data.holdover_timer_s * 1000);
         /* The new QL is the worst between the previous QL and the holdover QL */
-        ql = (old_ql > g_holdover_ql) ? old_ql : g_holdover_ql;
+        ql = (old_ql > g_monitor_data.holdover_ql) ? old_ql : g_monitor_data.holdover_ql;
       } else if(old_synce_dpll_state == E_device_dpll_state_holdover) {
         /* QL will be changed to LO QL when the holdover timer expires */
         ql = old_ql;
       } else {
-        /*
-         * Sync-E DPLL transitioned from lock acquisition-recovery state to holdover state.
-         * Stop the holdover timer to change QL to LO QL immediately
-         */
-        g_monitor_data.holdover_monotonic_time_ms = 0;
+        /* Sync-E DPLL transitioned from lock acquisition-recovery state to holdover state. */
+        if(g_monitor_data.advanced_holdover_en) {
+          /*
+           * Do not stop the holdover timer if already running.
+           * The new QL is the worst between the previous QL and the holdover QL until the holdover timer expires.
+           */
+          ql = (old_ql > g_monitor_data.holdover_ql) ? old_ql : g_monitor_data.holdover_ql;
+        } else {
+          /* Stop the holdover timer to change QL to LO QL immediately */
+          g_monitor_data.holdover_monotonic_time_ms = 0;
+        }
       }
 
       if(os_get_monotonic_milliseconds() > g_monitor_data.holdover_monotonic_time_ms) {
         /* Advertise LO QL and freerun state instead of holdover state because holdover timer expired */
         synce_dpll_state = E_device_dpll_state_freerun;
-        ql = g_lo_ql;
+        ql = g_monitor_data.lo_ql;
       }
     }
     g_monitor_data.current_synce_dpll_state = synce_dpll_state;
@@ -187,7 +191,7 @@ void monitor_determine_ql(void)
 
     if(ql != old_ql) {
       /* Change in current QL */
-      if(ql == g_lo_ql) {
+      if(ql == g_monitor_data.lo_ql) {
         pr_info("Current QL is set to LO QL %s (%d)", conv_ql_enum_to_str(ql), ql);
       } else {
         pr_info("Current QL is set to temporary holdover QL %s (%d)", conv_ql_enum_to_str(ql), ql);
@@ -237,7 +241,7 @@ void monitor_get_current_status(T_esmc_ql *current_ql,
 
 void monitor_clear_holdover_timer(void)
 {
-  if(g_holdover_timer_s == 0) {
+  if(g_monitor_data.holdover_timer_s == 0) {
     pr_warning("Holdover timer is already configured to 0 milliseconds");
     return;
   }
@@ -252,10 +256,11 @@ int monitor_deinit(void)
   /* Deinitialize mutex */
   os_mutex_deinit(&g_monitor_mutex);
 
-  g_lo_ql = E_esmc_ql_max;
-  g_holdover_ql = E_esmc_ql_max;
+  g_monitor_data.lo_ql = E_esmc_ql_max;
+  g_monitor_data.holdover_ql = E_esmc_ql_max;
+  g_monitor_data.holdover_timer_s = 0;
+  g_monitor_data.advanced_holdover_en = 0;
 
-  g_holdover_timer_s = 0;
   g_monitor_data.holdover_monotonic_time_ms = 0;
   g_monitor_data.current_synce_dpll_state = E_device_dpll_state_max;
   g_monitor_data.current_ql = E_esmc_ql_max;

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #ifndef MANAGEMENT_H
@@ -135,7 +135,7 @@ typedef struct {
 typedef void (*T_management_current_ql_change_cb)(T_esmc_ql current_ql);
 typedef void (*T_management_sync_current_ql_change_cb)(const char *port_name, T_esmc_ql current_ql, int rank);
 typedef void (*T_management_synce_dpll_current_state_change_cb)(T_device_dpll_state synce_dpll_state);
-typedef void (*T_management_sync_current_clk_state_change_cb)(const char *port_name, T_sync_clk_state clk_state);
+typedef void (*T_management_sync_current_clk_state_change_cb)(const char *port_name, int clk_idx, T_sync_clk_state clk_state);
 typedef void (*T_management_sync_current_state_change_cb)(const char *port_name, T_sync_state state);
 typedef void (*T_management_alarm_cb)(const T_alarm_data *alarm_data);
 typedef void (*T_management_pcm4l_connection_status_change_cb)(int on);
@@ -164,6 +164,7 @@ void management_call_notify_sync_current_ql_cb(const char *port_name,
 void management_call_notify_synce_dpll_current_state_cb(T_device_dpll_state synce_dpll_state);
 
 void management_call_notify_sync_current_clk_state_cb(const char *port_name,
+                                                      int clk_idx,
                                                       T_sync_clk_state clk_state);
 
 void management_call_notify_sync_current_state_cb(const char *port_name,

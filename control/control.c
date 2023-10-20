@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-2
-* Pipeline ID: 233453
-* Commit Hash: 548f9660
+* Release Tag: 2-0-3
+* Pipeline ID: 246016
+* Commit Hash: 3db24a10
 ********************************************************************************************************************/
 
 #include <stdlib.h>
@@ -34,8 +34,6 @@
 #define MAX_NUMBER_HOPS   255
 
 #define LO_NUMBER_OF_HOPS   0xFF
-
-#define MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN   256 /* Change if MAX_NUM_OF_CLOCKS changes */
 
 /* Static data */
 
@@ -93,7 +91,7 @@ static void control_update_device_priority_table(void)
   int best_clk_idx;
   int best_rank;
   int err;
-  char buff[MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN];
+  char buff[1024];
   const char *format = " %d";
   int pos = 0;
   int ret;
@@ -141,13 +139,13 @@ static void control_update_device_priority_table(void)
   }
 
   for(priority = 0; priority < table.num_entries; priority++) {
-    if(pos >= MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN - 1) {
+    if(pos >= (int)sizeof(buff) - 1) {
       break;
     }
 
     /* snprintf returns number of characters stored in array, not including null character */
     ret = snprintf(&buff[pos],
-                   MAX_ORDERED_LIST_OF_CLK_PRIORITIES_STR_LEN - 1 - pos,
+                   sizeof(buff) - 1 - pos,
                    format,
                    table.clock_priority_table[priority].clk_idx);
 
@@ -462,6 +460,7 @@ void control_update_sync_table(void)
   int rank;
   T_esmc_ql current_ql;
   T_sync_clk_state clk_state;
+  int clk_idx;
 
   os_mutex_lock(&g_control_mutex);
   for(i = 0; i < g_control_data.num_syncs; i++) {
@@ -472,13 +471,15 @@ void control_update_sync_table(void)
     if(sync_entry->type == E_sync_type_tx_only)
       continue;
 
-    /* Update sync clock state */
+    /* Update sync clock state for active Sync-E ports and external clock ports.
+       Do not update the clock state for the monitoring ports. */
     old_clk_state = sync_entry->clk_state;
-    if(((sync_entry->type == E_sync_type_synce) || (sync_entry->type == E_sync_type_external)) &&
-       control_check_qualification_status(sync_entry->clk_idx, &sync_entry->ref_mon_status)) {
-      sync_entry->clk_state = E_sync_clk_state_qualified;
-    } else {
-      sync_entry->clk_state = E_sync_clk_state_unqualified;
+    if((sync_entry->type == E_sync_type_synce) || (sync_entry->type == E_sync_type_external)) {
+      if(control_check_qualification_status(sync_entry->clk_idx, &sync_entry->ref_mon_status)) {
+        sync_entry->clk_state = E_sync_clk_state_qualified;
+      } else {
+        sync_entry->clk_state = E_sync_clk_state_unqualified;
+      }
     }
 
     /* Update sync state */
@@ -543,9 +544,10 @@ void control_update_sync_table(void)
     }
     if(old_clk_state != sync_entry->clk_state) {
       clk_state = sync_entry->clk_state;
+      clk_idx = sync_entry->clk_idx;
 
       os_mutex_unlock(&g_control_mutex);
-      management_call_notify_sync_current_clk_state_cb(port_name, clk_state);
+      management_call_notify_sync_current_clk_state_cb(port_name, clk_idx, clk_state);
       os_mutex_lock(&g_control_mutex);
     }
   }
@@ -655,11 +657,11 @@ int control_set_forced_ql(const char *port_name, T_esmc_ql forced_ql)
       if(sync_entry->type != E_sync_type_external) {
         if(sync_entry->type == E_sync_type_tx_only) {
           os_mutex_unlock(&g_control_mutex);
-          pr_warning("Forced QL is not supported for Sync-E TX only port %s", port_name);
+          pr_warning("Forced QL is not supported for %s because it is Sync-E TX only port", port_name);
           return -2;
         } else if(!g_control_data.synce_forced_ql_en) {
           os_mutex_unlock(&g_control_mutex);
-          pr_warning("Forced QL is not supported for Sync-E port %s", port_name);
+          pr_warning("Forced QL is not supported for %s because forced QL mode is disabled", port_name);
           return -2;
         }
       }
