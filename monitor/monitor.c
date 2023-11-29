@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-3
-* Pipeline ID: 246016
-* Commit Hash: 3db24a10
+* Release Tag: 2-0-4
+* Pipeline ID: 263480
+* Commit Hash: ff0cc43a
 ********************************************************************************************************************/
 
 #include <string.h>
@@ -74,6 +74,7 @@ void monitor_determine_ql(void)
   int old_sync_idx;
   unsigned long long tx_bundle_bitmap;
   T_alarm_data alarm_data;
+  char port_name[INTERFACE_MAX_NAME_LEN];
 
   /* Get status of Sync-E DPLL */
   err = device_adaptor_call_get_synce_dpll_state_cb(&synce_dpll_state);
@@ -136,12 +137,18 @@ void monitor_determine_ql(void)
 
     if(ql != old_ql) {
       /* Change in current QL */
-      pr_info("Current QL %s from %s (%d) to %s (%d)",
-              (ql < old_ql) ? "upgraded" : "degraded",
-              conv_ql_enum_to_str(old_ql),
-              old_ql,
-              conv_ql_enum_to_str(ql),
-              ql);
+      if(old_ql == E_esmc_ql_max) {
+        pr_info("Current QL set to %s (%d)",
+                conv_ql_enum_to_str(ql),
+                ql);
+      } else {
+        pr_info("Current QL %s from %s (%d) to %s (%d)",
+                (ql < old_ql) ? "upgraded" : "degraded",
+                conv_ql_enum_to_str(old_ql),
+                old_ql,
+                conv_ql_enum_to_str(ql),
+                ql);
+      }
     }
   } else {
     /* Sync-E DPLL is in freerun or holdover state and is not tracking a clock (i.e. clock is LO) */
@@ -209,8 +216,9 @@ void monitor_determine_ql(void)
     management_call_notify_synce_dpll_current_state_cb(synce_dpll_state);
   }
 
-  if(ql != old_ql) {
-    management_call_notify_current_ql_cb(ql);
+  if((ql != old_ql) || (sync_idx != old_sync_idx)) {
+    control_get_sync_name(sync_idx, port_name);
+    management_call_notify_current_ql_cb(port_name, ql);
   }
 }
 

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-3
-* Pipeline ID: 246016
-* Commit Hash: 3db24a10
+* Release Tag: 2-0-4
+* Pipeline ID: 263480
+* Commit Hash: ff0cc43a
 ********************************************************************************************************************/
 
 #ifndef MANAGEMENT_H
@@ -132,7 +132,7 @@ typedef struct {
   };
 } T_alarm_data;
 
-typedef void (*T_management_current_ql_change_cb)(T_esmc_ql current_ql);
+typedef void (*T_management_current_ql_change_cb)(const char *port_name, T_esmc_ql current_ql);
 typedef void (*T_management_sync_current_ql_change_cb)(const char *port_name, T_esmc_ql current_ql, int rank);
 typedef void (*T_management_synce_dpll_current_state_change_cb)(T_device_dpll_state synce_dpll_state);
 typedef void (*T_management_sync_current_clk_state_change_cb)(const char *port_name, int clk_idx, T_sync_clk_state clk_state);
@@ -155,7 +155,8 @@ int management_deinit(void);
 
 /* Callback management APIs */
 
-void management_call_notify_current_ql_cb(T_esmc_ql current_ql);
+void management_call_notify_current_ql_cb(const char *port_name,
+                                          T_esmc_ql current_ql);
 
 void management_call_notify_sync_current_ql_cb(const char *port_name,
                                                T_esmc_ql current_ql,
