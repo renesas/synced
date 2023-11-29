@@ -15,9 +15,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #####################################################################################################################
 #####################################################################################################################
-# Release Tag: 2-0-3
-# Pipeline ID: 246016
-# Commit Hash: 3db24a10
+# Release Tag: 2-0-4
+# Pipeline ID: 263480
+# Commit Hash: ff0cc43a
 #####################################################################################################################
 
 ###################
@@ -85,7 +85,6 @@ CONTROL_DIR       := control
 CONTROL_SRC_FILES := $(shell find $(CONTROL_DIR) -name "*.c")
 
 DEVICE_ROOT_DIR          := device
-DEVICE_DIR               := $(DEVICE_ROOT_DIR)/$(DEVICE)
 DEVICE_ADAPTOR_DIR       := $(DEVICE_ROOT_DIR)/device_adaptor
 DEVICE_GENERIC_DIR       := $(DEVICE_ROOT_DIR)/generic
 DEVICE_RSMU_DIR          := $(DEVICE_ROOT_DIR)/rsmu
@@ -114,7 +113,6 @@ INCS := \
 	$(PROJ_DIR) \
 	$(COMMON_DIR) \
 	$(CONTROL_DIR) \
-	$(DEVICE_DIR) \
 	$(DEVICE_ADAPTOR_DIR) \
 	$(DEVICE_GENERIC_DIR) \
 	$(DEVICE_RSMU_DIR) \
@@ -126,7 +124,7 @@ INCS := \
 PREFIXED_INCS := $(addprefix -I,$(INCS))
 
 DEFINES := \
-	DEVICE=$(DEVICE) \
+	DEVICE=$(subst -,_,$(DEVICE)) \
 	SYNCED_DEBUG_MODE=$(SYNCED_DEBUG_MODE)
 
 PREFIXED_DEFINES := $(addprefix -D,$(DEFINES))
@@ -145,7 +143,7 @@ OBJS := $(addprefix $(OBJ_DIR)/,$(OBJS))
 
 SYNCED := $(BIN_DIR)/synced
 
-SYNCED_CLI_OBJ_DIR := $(OBJ_DIR)/management/cli
+SYNCED_CLI_OBJ_DIR := $(OBJ_DIR)/$(MANAGEMENT_DIR)/cli
 
 SYNCED_CLI_DEFINES := \
 	DEVICE=$(DEVICE)
@@ -155,9 +153,9 @@ SYNCED_CLI_PREFIXED_DEFINES := $(addprefix -D,$(SYNCED_CLI_DEFINES))
 SYNCED_CLI_FILE := synced_cli.c
 
 SYNCED_CLI_SRC_FILES := \
-	$(SYNCED_CLI_FILE) \
 	$(COMMON_DIR)/common.c \
-	$(COMMON_DIR)/print.c
+	$(COMMON_DIR)/print.c \
+	$(SYNCED_CLI_FILE)
 
 SYNCED_CLI_OBJS := $(patsubst %.c,%.o,$(SYNCED_CLI_SRC_FILES))
 SYNCED_CLI_OBJS := $(addprefix $(SYNCED_CLI_OBJ_DIR)/,$(SYNCED_CLI_OBJS))

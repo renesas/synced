@@ -1,9 +1,8 @@
 @file README.md
 <br>@note Copyright (C) [2021-2023] `Renesas Electronics Corporation` and/or its affiliates
 <br>This program is free software; you can redistribute it and/or modify
-<br>it under the terms of the GNU General Public License as published by
-<br>the Free Software Foundation; either version 2 of the License, or
-<br>(at your option) any later version.
+<br>it under the terms of the GNU General Public License version 2, as published by
+<br>the Free Software Foundation.
 <br>
 <br>This program is distributed in the hope that it will be useful,
 <br>but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +13,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 2-0-3
-<br>Pipeline ID: 246016
-<br>Commit Hash: 3db24a10
+Release Tag: 2-0-4
+<br>Pipeline ID: 263480
+<br>Commit Hash: ff0cc43a
 ***
 
-# `synced` 2-0-3 README
+# `synced` 2-0-4 README
 
 `synced` is a user space Synchronous Ethernet (Sync-E) stack for the Linux operating system.
 
@@ -490,7 +489,7 @@ These APIs can be invoked using `synced_cli`.
 
 The following callbacks are supported:
 
- - Notification for the current QL
+ - Notification for the current QL and selected port name
    - **management_call_notify_current_ql_cb()**
  - Notification for the current QL of the specified **Sync-E Clock Port** or **Sync-E Monitoring
    Port**

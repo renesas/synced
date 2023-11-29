@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-3
-* Pipeline ID: 246016
-* Commit Hash: 3db24a10
+* Release Tag: 2-0-4
+* Pipeline ID: 263480
+* Commit Hash: ff0cc43a
 ********************************************************************************************************************/
 
 #include <limits.h>
@@ -121,7 +121,7 @@ static int g_management_init_flag = 0;
 
 /* Static functions */
 
-static void management_template_notify_current_ql(T_esmc_ql current_ql)
+static void management_template_notify_current_ql(const char *port_name, T_esmc_ql current_ql)
 {
   /* This function is a template; the user must implement their own code here or register their own functions using management_init(). */
 
@@ -130,7 +130,7 @@ static void management_template_notify_current_ql(T_esmc_ql current_ql)
 
   g_current_ql = current_ql;
 
-  pr_info("Current QL changed to %s (%d)", conv_ql_enum_to_str(current_ql), current_ql);
+  pr_info("Selected port is %s and current QL is %s (%d)", port_name, conv_ql_enum_to_str(current_ql), current_ql);
 }
 
 #if ENABLE_EXTERNAL_MUX_CONTROL
@@ -339,10 +339,10 @@ int management_deinit(void)
 
 /* Callback management APIs */
 
-void management_call_notify_current_ql_cb(T_esmc_ql current_ql)
+void management_call_notify_current_ql_cb(const char *port_name, T_esmc_ql current_ql)
 {
   if(g_management_callbacks.notify_current_ql != NULL) {
-    g_management_callbacks.notify_current_ql(current_ql);
+    g_management_callbacks.notify_current_ql(port_name, current_ql);
   }
 }
 
