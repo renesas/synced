@@ -1,5 +1,5 @@
 @file README.md
-<br>@note Copyright (C) [2021-2023] `Renesas Electronics Corporation` and/or its affiliates
+<br>@note Copyright (C) [2021-2024] `Renesas Electronics Corporation` and/or its affiliates
 <br>This program is free software; you can redistribute it and/or modify
 <br>it under the terms of the GNU General Public License version 2, as published by
 <br>the Free Software Foundation.
@@ -13,12 +13,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 2-0-4
-<br>Pipeline ID: 263480
-<br>Commit Hash: ff0cc43a
+Release Tag: 2-0-5
+<br>Pipeline ID: 310964
+<br>Commit Hash: b166f770
 ***
 
-# `synced` 2-0-4 README
+# `synced` 2-0-5 README
 
 `synced` is a user space Synchronous Ethernet (Sync-E) stack for the Linux operating system.
 
@@ -49,8 +49,8 @@ Contact IDT-Support-sync@lm.renesas.com to get support for `synced`.
 <a name="1_overview"></a>
 ## 1. Overview
 
-`synced` facilitates Sync-E according to the ITU-T G.8264 (03/2018) and ITU-T G.781 (04/2020)
-standards.
+`synced` facilitates Sync-E according to the ITU-T G.8264 (08/2017) Amd. 1 (03/2018) and ITU-T
+G.781 (04/2020) Amd. 1 (11/2022) standards.
 
 Accompanying `synced` is `synced_cli`, which is a command-line interface (CLI) that lets the user
 dynamically manage `synced`. `synced` interfaces with `synced_cli` via a TCP/IP socket.
@@ -584,35 +584,32 @@ and QL values:
  - E_physical_clock_category_1:
    - E_esmc_ql_net_opt_1_ePRTC
    - E_esmc_ql_net_opt_1_PRTC
-   - E_esmc_ql_net_opt_2_ePRTC
-   - E_esmc_ql_net_opt_2_PRTC
-
- - E_physical_clock_category_2:
    - E_esmc_ql_net_opt_1_ePRC
    - E_esmc_ql_net_opt_1_PRC
+   - E_esmc_ql_net_opt_2_ePRTC
+   - E_esmc_ql_net_opt_2_PRTC
    - E_esmc_ql_net_opt_2_ePRC
    - E_esmc_ql_net_opt_2_PRS
 
- - E_physical_clock_category_3:
+ - E_physical_clock_category_2:
    - E_esmc_ql_net_opt_1_SSUA
-   - E_esmc_ql_net_opt_1_SSUB
-   - E_esmc_ql_net_opt_2_STU
    - E_esmc_ql_net_opt_2_ST2
-   - E_esmc_ql_net_opt_2_TNC
-   - E_esmc_ql_net_opt_3_UNK
+
+ - E_physical_clock_category_3:
+   - E_esmc_ql_net_opt_1_SSUB
+   - E_esmc_ql_net_opt_2_ST3E
 
  - E_physical_clock_category_4:
    - E_esmc_ql_net_opt_1_eSEC
    - E_esmc_ql_net_opt_1_SEC
-   - E_esmc_ql_net_opt_2_ST3E
+   - E_esmc_ql_net_opt_2_STU
+   - E_esmc_ql_net_opt_2_TNC
    - E_esmc_ql_net_opt_2_eEEC
    - E_esmc_ql_net_opt_2_ST3
    - E_esmc_ql_net_opt_2_SMC
    - E_esmc_ql_net_opt_2_ST4
    - E_esmc_ql_net_opt_2_PROV
-   - E_esmc_ql_net_opt_3_SEC
 
  - E_physical_clock_category_DNU:
    - E_esmc_ql_net_opt_1_DNU
    - E_esmc_ql_net_opt_2_DUS
-   - E_esmc_ql_net_opt_3_INV1

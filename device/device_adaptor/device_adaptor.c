@@ -1,6 +1,6 @@
 /**
  * @file device_adaptor.c
- * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2024] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-4
-* Pipeline ID: 263480
-* Commit Hash: ff0cc43a
+* Release Tag: 2-0-5
+* Pipeline ID: 310964
+* Commit Hash: b166f770
 ********************************************************************************************************************/
 
 #include <pthread.h>
@@ -158,7 +158,7 @@ int device_adaptor_call_get_synce_dpll_state_cb(T_device_dpll_state *synce_dpll_
   int err = -1;
 
   os_mutex_lock(&g_device_adaptor_mutex);
-  if(g_device_adaptor_callbacks.get_current_clk_idx != NULL) {
+  if(g_device_adaptor_callbacks.get_synce_dpll_state != NULL) {
     err = g_device_adaptor_callbacks.get_synce_dpll_state(g_device_adaptor_data.synce_dpll_idx, synce_dpll_state);
   }
   os_mutex_unlock(&g_device_adaptor_mutex);

@@ -1,6 +1,6 @@
 /**
  * @file port.h
- * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2024] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-4
-* Pipeline ID: 263480
-* Commit Hash: ff0cc43a
+* Release Tag: 2-0-5
+* Pipeline ID: 310964
+* Commit Hash: b166f770
 ********************************************************************************************************************/
 
 #ifndef PORT_H
@@ -30,8 +30,8 @@
 
 typedef struct {
   unsigned char originator_clock_id[MAX_CLK_ID_LEN];
-  int mixed_EEC_eEEC;                                /* Equivalent to ITU-T G.8264 (03/2018) bit 0 of extended QL TLV flag field */
-  int partial_chain;                                 /* Equivalent to ITU-T G.8264 (03/2018) bit 1 of extended QL TLV flag field */
+  int mixed_EEC_eEEC;                                /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) bit 0 of extended QL TLV flag field */
+  int partial_chain;                                 /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) bit 1 of extended QL TLV flag field */
   int num_cascaded_eEEC;
   int num_cascaded_EEC;
 } T_port_ext_ql_tlv_data;

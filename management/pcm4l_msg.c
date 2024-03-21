@@ -1,6 +1,6 @@
 /**
  * @file pcm4l_msg.c
- * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2024] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-4
-* Pipeline ID: 263480
-* Commit Hash: ff0cc43a
+* Release Tag: 2-0-5
+* Pipeline ID: 310964
+* Commit Hash: b166f770
 ********************************************************************************************************************/
 
 #include "pcm4l_msg.h"
@@ -37,49 +37,49 @@ T_pcm4l_error_code pcm4l_msg_set_clock_category(T_esmc_ql ql, int wait_for_respo
   memset(&tx_msg, 0, sizeof(tx_msg));
   tx_msg.api_code = E_pcm4l_api_set_clock_category;
 
+  /* Based on ITU G.8275.1 (11/2022) QL-to-clock category mapping */
   switch(ql) {
     case E_esmc_ql_net_opt_1_ePRTC:
     case E_esmc_ql_net_opt_1_PRTC:
+    case E_esmc_ql_net_opt_1_ePRC:
+    case E_esmc_ql_net_opt_1_PRC:
     case E_esmc_ql_net_opt_2_ePRTC:
     case E_esmc_ql_net_opt_2_PRTC:
+    case E_esmc_ql_net_opt_2_ePRC:
+    case E_esmc_ql_net_opt_2_PRS:
       clock_category = E_physical_clock_category_1;
       break;
 
-    case E_esmc_ql_net_opt_1_ePRC:
-    case E_esmc_ql_net_opt_1_PRC:
-    case E_esmc_ql_net_opt_2_ePRC:
-    case E_esmc_ql_net_opt_2_PRS:
+    case E_esmc_ql_net_opt_1_SSUA:
+    case E_esmc_ql_net_opt_2_ST2:
       clock_category = E_physical_clock_category_2;
       break;
 
-    case E_esmc_ql_net_opt_1_SSUA:
     case E_esmc_ql_net_opt_1_SSUB:
-    case E_esmc_ql_net_opt_2_STU:
-    case E_esmc_ql_net_opt_2_ST2:
-    case E_esmc_ql_net_opt_2_TNC:
-    case E_esmc_ql_net_opt_3_UNK:
+    case E_esmc_ql_net_opt_2_ST3E:
       clock_category = E_physical_clock_category_3;
       break;
 
-    case E_esmc_ql_net_opt_1_eSEC:
-    case E_esmc_ql_net_opt_1_SEC:
-    case E_esmc_ql_net_opt_2_ST3E:
+    case E_esmc_ql_net_opt_1_eSEC:                  /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QL-eEEC */
+    case E_esmc_ql_net_opt_1_SEC:                   /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QL-EEC1 */
+    case E_esmc_ql_net_opt_2_STU:
+    case E_esmc_ql_net_opt_2_TNC:
     case E_esmc_ql_net_opt_2_eEEC:
-    case E_esmc_ql_net_opt_2_ST3:
+    case E_esmc_ql_net_opt_2_ST3:                   /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QL-EEC2 */
     case E_esmc_ql_net_opt_2_SMC:
     case E_esmc_ql_net_opt_2_ST4:
     case E_esmc_ql_net_opt_2_PROV:
-    case E_esmc_ql_net_opt_3_SEC:
+      /* Clock category 4 QLs are not defined by ITU G.8275.1 (11/2022) */
       clock_category = E_physical_clock_category_4;
       break;
 
     case E_esmc_ql_net_opt_1_DNU:
     case E_esmc_ql_net_opt_2_DUS:
-    case E_esmc_ql_net_opt_3_INV1:
       clock_category = E_physical_clock_category_DNU;
       break;
 
     default:
+      /* Network option 3 QLs are not supported  */
       clock_category = E_physical_clock_category_INVALID;
       break;     
   }
