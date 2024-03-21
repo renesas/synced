@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-4
-* Pipeline ID: 263480
-* Commit Hash: ff0cc43a
+* Release Tag: 2-0-5
+* Pipeline ID: 310964
+* Commit Hash: b166f770
 ********************************************************************************************************************/
 
 #include <ctype.h>
@@ -671,9 +671,10 @@ int config_read(const char *name,
         }
 
         if(strlen(line) > (INTERFACE_MAX_NAME_LEN - 1)) {
+          line[INTERFACE_MAX_NAME_LEN - 1] = 0;
           fprintf(stderr,
                   "Failed to parse port name %s on line %d because number of characters exceeds %d\n",
-                  port,
+                  line,
                   line_num,
                   INTERFACE_MAX_NAME_LEN - 1);
           goto parse_error;

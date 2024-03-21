@@ -1,6 +1,6 @@
 /**
  * @file types.h
- * @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
+ * @note Copyright (C) [2021-2024] Renesas Electronics Corporation and/or its affiliates
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-4
-* Pipeline ID: 263480
-* Commit Hash: ff0cc43a
+* Release Tag: 2-0-5
+* Pipeline ID: 310964
+* Commit Hash: b166f770
 ********************************************************************************************************************/
 
 #ifndef TYPES_H
@@ -71,7 +71,7 @@ typedef enum {
   E_esmc_e_ssm_code_ePRC  = 0x23
 } T_esmc_e_ssm_code;
 
-/* Combination of ITU-T G.781 (04/2020) and ITU-T G.8264 (03/2018) QLs */
+/* Combination of ITU-T G.781 (04/2020) Amd. 1 (11/2022) and ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QLs */
 typedef enum {
   /* Network option 1 start */
   E_esmc_ql_net_opt_1_ePRTC,
@@ -80,8 +80,8 @@ typedef enum {
   E_esmc_ql_net_opt_1_PRC,
   E_esmc_ql_net_opt_1_SSUA,
   E_esmc_ql_net_opt_1_SSUB,
-  E_esmc_ql_net_opt_1_eSEC,  /* Equivalent to ITU-T G.8264 (03/2018) QL-eEEC */
-  E_esmc_ql_net_opt_1_SEC,   /* Equivalent to ITU-T G.8264 (03/2018) QL-EEC1 */
+  E_esmc_ql_net_opt_1_eSEC,  /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QL-eEEC */
+  E_esmc_ql_net_opt_1_SEC,   /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QL-EEC1 */
   E_esmc_ql_net_opt_1_DNU,
   E_esmc_ql_net_opt_1_INV0,
   E_esmc_ql_net_opt_1_INV1,
@@ -106,7 +106,7 @@ typedef enum {
   E_esmc_ql_net_opt_2_TNC,
   E_esmc_ql_net_opt_2_ST3E,
   E_esmc_ql_net_opt_2_eEEC,
-  E_esmc_ql_net_opt_2_ST3,   /* Equivalent to ITU-T G.8264 (03/2018) QL-EEC2 */
+  E_esmc_ql_net_opt_2_ST3,   /* Equivalent to ITU-T G.8264 (08/2017) Amd. 1 (03/2018) QL-EEC2 */
   E_esmc_ql_net_opt_2_SMC,
   E_esmc_ql_net_opt_2_ST4,
   E_esmc_ql_net_opt_2_PROV,
@@ -121,10 +121,10 @@ typedef enum {
   /* Network option 2 end */
 
   /* Network option 3 start */
-  // E_esmc_ql_net_opt_3_ePRTC, /* Under study */
-  // E_esmc_ql_net_opt_3_PRTC,  /* Under study */
+  E_esmc_ql_net_opt_3_ePRTC,
+  E_esmc_ql_net_opt_3_PRTC,
   E_esmc_ql_net_opt_3_UNK,
-  // E_esmc_ql_net_opt_3_eSEC,  /* Under study */
+  E_esmc_ql_net_opt_3_eSEC,
   E_esmc_ql_net_opt_3_SEC,
   E_esmc_ql_net_opt_3_INV1,
   E_esmc_ql_net_opt_3_INV2,

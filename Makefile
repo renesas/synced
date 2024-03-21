@@ -1,6 +1,6 @@
 #####################################################################################################################
 # @file Makefile
-# @note Copyright (C) [2021-2023] Renesas Electronics Corporation and/or its affiliates
+# @note Copyright (C) [2021-2024] Renesas Electronics Corporation and/or its affiliates
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2, as published
@@ -15,9 +15,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #####################################################################################################################
 #####################################################################################################################
-# Release Tag: 2-0-4
-# Pipeline ID: 263480
-# Commit Hash: ff0cc43a
+# Release Tag: 2-0-5
+# Pipeline ID: 310964
+# Commit Hash: b166f770
 #####################################################################################################################
 
 ###################
@@ -297,8 +297,8 @@ help:
 	@echo "    ESMC_STACK        - ESMC stack type"
 	@echo "                          e.g. Use Renesas ESMC stack: ESMC_STACK=renesas"
 	@echo "    PLATFORM          - Platform type"
-	@echo "                          e.g. Target AMD64 platform: ESMC_STACK=amd64"
-	@echo "                          e.g. Target ARM64 platform: ESMC_STACK=arm64"
+	@echo "                          e.g. Target AMD64 platform: PLATFORM=amd64"
+	@echo "                          e.g. Target ARM64 platform: PLATFORM=arm64"
 	@echo "    CROSS_COMPILE     - Cross-compiler"
 	@echo "                          e.g. Compile for ARM64: CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-"
 	@echo "    DEVICE            - Device"
