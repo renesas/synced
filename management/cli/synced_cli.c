@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-5
-* Pipeline ID: 310964
-* Commit Hash: b166f770
+* Release Tag: 2-0-6
+* Pipeline ID: 397387
+* Commit Hash: 6a4f6beb
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -40,9 +40,9 @@
 #error __linux__ is not defined!
 #endif /* __linux__ */
 
-#define VERSION_ID    "2.0.5"
-#define PIPELINE_ID   "310964"
-#define COMMIT_ID     "b166f770"
+#define VERSION_ID    "2.0.6"
+#define PIPELINE_ID   "397387"
+#define COMMIT_ID     "6a4f6beb"
 
 #define CLI_BUFF_SIZE   128
 

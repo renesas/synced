@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-5
-* Pipeline ID: 310964
-* Commit Hash: b166f770
+* Release Tag: 2-0-6
+* Pipeline ID: 397387
+* Commit Hash: 6a4f6beb
 ********************************************************************************************************************/
 
 #include <fcntl.h>
@@ -59,6 +59,7 @@ static int rsmu_init_device(T_device_adaptor_data *device_adaptor_data)
     pr_warning("%s: RSMU device already opened", __func__);
   }
 
+  pr_info("%s: RSMU device initialized", __func__);
   return 0;
 }
 

@@ -13,12 +13,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 2-0-5
-<br>Pipeline ID: 310964
-<br>Commit Hash: b166f770
+Release Tag: 2-0-6
+<br>Pipeline ID: 397387
+<br>Commit Hash: 6a4f6beb
 ***
 
-# `synced` 2-0-5 README
+# `synced` 2-0-6 README
 
 `synced` is a user space Synchronous Ethernet (Sync-E) stack for the Linux operating system.
 
@@ -142,7 +142,7 @@ algorithm. It also manages the following TX and RX event callbacks:
 The **Device Module** manages the timing device. By default, `synced` is built to target a generic
 device. However, `synced` can also be built to target a `Renesas Synchronization Management Unit`
 (RSMU) device. An RSMU device is a character device that can communicate with a variety of `Renesas
-Electronics Corporation timing devices, such as the `Renesas Electronics Corporation ClockMatrix`
+Electronics Corporation` timing devices, such as the `Renesas Electronics Corporation ClockMatrix`
 timing device. The RSMU driver can be downloaded from
 https://github.com/renesas/linux-ptp-driver-package. Contact IDT-Support-sync@lm.renesas.com for
 details on employing an RSMU device.
