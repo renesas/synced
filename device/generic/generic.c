@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-5
-* Pipeline ID: 310964
-* Commit Hash: b166f770
+* Release Tag: 2-0-6
+* Pipeline ID: 397387
+* Commit Hash: 6a4f6beb
 ********************************************************************************************************************/
 
 #include <pthread.h>
@@ -108,6 +108,7 @@ static int generic_template_init_device(T_device_adaptor_data *device_adaptor_da
   /* Configure device */
   generic_config_device_helper(device_cfg_file);
 
+  pr_info("%s: Generic device initialized", __func__);
   return 0;
 }
 
