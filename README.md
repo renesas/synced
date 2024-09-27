@@ -30,8 +30,6 @@ Public License. See the file COPYING for the license terms.
 
 `synced` can be downloaded from https://github.com/renesas/synced.
 
-Contact IDT-Support-sync@lm.renesas.com to get support for `synced`.
-
 ---
 
 ## Table of Contents
@@ -144,8 +142,7 @@ device. However, `synced` can also be built to target a `Renesas Synchronization
 (RSMU) device. An RSMU device is a character device that can communicate with a variety of `Renesas
 Electronics Corporation` timing devices, such as the `Renesas Electronics Corporation ClockMatrix`
 timing device. The RSMU driver can be downloaded from
-https://github.com/renesas/linux-ptp-driver-package. Contact IDT-Support-sync@lm.renesas.com for
-details on employing an RSMU device.
+https://github.com/renesas/linux-ptp-driver-package.
 
 `synced` requires the device to support an automatic reference priority table.
 
