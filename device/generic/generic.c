@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <pthread.h>
@@ -33,6 +33,10 @@
 #define GENERIC_REF_MON_FREQ_OFF_ALARM_STATUS_LSB   2
 #define GENERIC_REF_MON_NO_ACT_ALARM_STATUS_LSB     1
 #define GENERIC_REF_MON_LOS_ALARM_STATUS_LSB        0
+
+/* Static data */
+static int best_clk_idx = INVALID_CLK_IDX;
+
 
 /* Static functions */
 
@@ -52,7 +56,7 @@ static int generic_get_dpll_ref_helper(int synce_dpll_idx)
 {
   (void)synce_dpll_idx;
 
-  return INVALID_CLK_IDX;
+  return best_clk_idx;
 }
 
 static void generic_set_dpll_ref_pri_helper(int synce_dpll_idx,
@@ -77,7 +81,7 @@ static T_device_dpll_state generic_get_dpll_state_helper(int synce_dpll_idx)
 {
   (void)synce_dpll_idx;
 
-  return E_device_dpll_state_freerun;
+  return (best_clk_idx == INVALID_CLK_IDX) ? E_device_dpll_state_freerun : E_device_dpll_state_locked;
 }
 
 static void generic_deinit_i2c_helper(void)
@@ -147,6 +151,8 @@ static int generic_template_set_clock_priorities(int synce_dpll_idx, T_device_cl
                                     0,              /* Disable */
                                     0);
   }
+
+  best_clk_idx = (num_entries > 0) ? table->clock_priority_table[0].clk_idx : INVALID_CLK_IDX;
 
   return 0;
 }

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -41,6 +41,7 @@
 #include "../../common/os.h"
 #include "../../common/print.h"
 #include "../../common/types.h"
+
 
 #define PORT_MAX_NAME_LEN   INTERFACE_MAX_NAME_LEN
 
@@ -139,11 +140,11 @@ static int port_open_tx(const char *name, T_port_num port_num, struct sockaddr_l
   int fd;
 
   fd = raw_socket_open(name, port_num, mac_addr);
+
   if(fd == UNINITIALIZED_FD) {
     pr_err("Failed to open TX for port %s (port number: %d)", name, port_num);
     return fd;
   }
-
   pr_info("Opened TX for port %s (port number: %d)", name, port_num);
 
   return fd;
@@ -154,11 +155,11 @@ static int port_open_rx(const char *name, T_port_num port_num, struct sockaddr_l
   int fd;
 
   fd = raw_socket_open(name, port_num, mac_addr);
+
   if(fd == UNINITIALIZED_FD) {
     pr_err("Failed to open RX for port %s (port number: %d)", name, port_num);
     return fd;
   }
-
   pr_info("Opened RX for port %s (port number: %d)", name, port_num);
 
   return fd;
@@ -422,11 +423,11 @@ static void *port_rx_thread(void *arg)
     unsigned char originator_mac_addr[ETH_ALEN];
     int num_bytes_rx;
 
-    int enhanced_flag;
+    int enhanced_flag = 0;
     int ql_change_flag;
     int ext_ql_tlv_change_flag;
 
-    T_esmc_ql parsed_ql;
+    T_esmc_ql parsed_ql = rx_thread_data->last_ql;
     T_port_ext_ql_tlv_data parsed_ext_ql_tlv_data;
 
     usleep(ESMC_RX_HEARTBEAT_PERIOD_MS * 1000);
@@ -538,9 +539,9 @@ static void *port_rx_thread(void *arg)
                     (enhanced_flag == 1) ? "yes" : "no",
                     name,
                     port_num);
-  #if (SYNCED_DEBUG_MODE == 1)
+#if (SYNCED_DEBUG_MODE == 1)
             esmc_print_esmc_pdu(&msg, E_esmc_print_esmc_pdu_type_rx);
-  #endif
+#endif
             os_mutex_unlock(&g_port_print_mutex);
           }
         } else {

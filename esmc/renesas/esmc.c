@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -514,10 +514,10 @@ static int esmc_ssm_and_essm_to_ql_map(T_esmc_network_option net_opt, unsigned c
               *ql = E_esmc_ql_net_opt_2_PRS;
               break;
             case E_esmc_e_ssm_code_PRTC:
-              *ql = E_esmc_ql_net_opt_1_PRTC;
+              *ql = E_esmc_ql_net_opt_2_PRTC;
               break;
             case E_esmc_e_ssm_code_ePRTC:
-              *ql = E_esmc_ql_net_opt_1_ePRTC;
+              *ql = E_esmc_ql_net_opt_2_ePRTC;
               break;
             case E_esmc_e_ssm_code_ePRC:
               *ql = E_esmc_ql_net_opt_2_ePRC;

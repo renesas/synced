@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <ctype.h>
@@ -255,7 +255,7 @@ static struct config_item g_config_table[] = {
   /* Interface (port) variables */
   PORT_ITEM_INT("clk_idx", MISSING_CLK_IDX, 0, 15), /* Default value is MISSING_CLK_IDX, which means Sync-E monitoring port */
   PORT_ITEM_INT("pri", NO_PRI, 0, 255),
-  PORT_ITEM_STR("init_ql", "FAILED"),
+  PORT_ITEM_STR("init_ql", DEFAULT_INIT_QL_STR),
   PORT_ITEM_INT("tx_en", 0, 0, 1),
   PORT_ITEM_INT("rx_en", 0, 0, 1),
   PORT_ITEM_INT("tx_bundle_num", NO_TX_BUNDLE_NUM, NO_TX_BUNDLE_NUM, 255)
@@ -661,8 +661,7 @@ int config_read(const char *name,
       if(current_section == PORT_SECTION) {
         char port[INTERFACE_MAX_NAME_LEN];
 
-        port_counter++;
-        if(port_counter > MAX_NUM_OF_SYNC_ENTRIES) {
+        if(port_counter >= MAX_NUM_OF_SYNC_ENTRIES) {
           fprintf(stderr,
                   "Failed to parse configuration on line %d because maximum number of ports %d reached\n",
                   line_num,
@@ -686,7 +685,8 @@ int config_read(const char *name,
           goto parse_error;
         }
 
-        for(i = 0; i < MAX_NUM_OF_SYNC_ENTRIES; i++) {
+        /* Check if this port name already exists */
+        for(i = 0; i < port_counter; i++) {
           if(!strcmp(port, g_config_port_name[i])) {
             fprintf(stderr, "Failed to parse configuration for port %s on line %d because name already used\n", port, line_num);
             goto parse_error;
@@ -698,7 +698,8 @@ int config_read(const char *name,
           goto parse_error;
         }
 
-        strncpy(g_config_port_name[port_counter - 1], port, strlen(port) + 1);
+        strncpy(g_config_port_name[port_counter], port, strlen(port) + 1);
+        port_counter++;
       }
 
       continue;
@@ -1021,6 +1022,21 @@ int config_parse_option(struct config *cfg,
   }
 
   return -1;
+}
+
+int get_default_init_ql(T_esmc_network_option net_opt,
+                        T_esmc_ql *ql)
+{
+  if(net_opt == E_esmc_network_option_1) {
+    *ql = E_esmc_ql_net_opt_1_DNU;
+  } else if(net_opt == E_esmc_network_option_2) {
+    *ql = E_esmc_ql_net_opt_2_DUS;
+  } else if(net_opt == E_esmc_network_option_3) {
+    *ql = E_esmc_ql_net_opt_3_SEC;
+  } else {
+    return -1;
+  }
+  return 0;
 }
 
 int config_ql_str_to_enum_conv(T_esmc_network_option net_opt,

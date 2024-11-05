@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -40,9 +40,9 @@
 #error __linux__ is not defined!
 #endif /* __linux__ */
 
-#define VERSION_ID    "2.0.6"
-#define PIPELINE_ID   "397387"
-#define COMMIT_ID     "6a4f6beb"
+#define VERSION_ID    "2.0.7"
+#define PIPELINE_ID   "422266"
+#define COMMIT_ID     "47d8d0e1"
 
 #define CLI_BUFF_SIZE   128
 
@@ -120,7 +120,7 @@ static int g_command_line_mode = 0;
  *                                                  +----------------+
  *                                                  |      -c 1      |
  *                                                  +----------------+
- *  command-line -> getopt() -> parse_command() --> |      -c 5      | <-- Tail (push command to queue and increment tail)
+ *  command-line -> getopt() -> parse_command() --> |      -c 5      | <-- Tail (Push command to queue and increment tail)
  *                                                  +----------------+
  *                                                  |                |
  *                                                  +----------------+
@@ -202,8 +202,8 @@ static void print_help(void)
   int i;
 
   printf("\n=== Commands:\n");
-  printf("In interactive mode, enter the code in the square brackets on the left.\n"
-         "In command-line mode, enter the code in the square brackets on the left or the string in parentheses on the right.\n\n");
+  printf("In interactive mode, enter the code inside the square brackets on the left.\n"
+         "In command-line mode, enter the code inside the square brackets on the left or the API name inside the parentheses on the right.\n\n");
 
   for(i = 0; i < E_mng_api_max; i++) {
     printf("[%d]: %s (%s)\n", i, conv_api_code_to_str(i), conv_api_enum_to_str(i));
@@ -638,7 +638,7 @@ int main(int argc, char *argv[])
         if(strcmp(optarg, "0") && (api_code == 0)) {
           /* Not a number; might be a command string */
           if(conv_api_code_str_to_enum(optarg, &api_code) < 0) {
-            printf("***Error: Failed to recognize Management API string\n");
+            printf("***Error: Failed to recognize Management API string %s\n", optarg);
             goto quick_end;
           }
         }
@@ -666,10 +666,7 @@ int main(int argc, char *argv[])
         goto quick_end;
 
       default:
-        if(optind > 4) {
-          usage(prog_name);
-          goto quick_end;
-        }
+        break;
     }
   }
 
