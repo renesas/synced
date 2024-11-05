@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #ifndef TYPES_H
@@ -36,6 +36,9 @@
 
 /* Applies when port is Sync-E TX only port */
 #define NO_PRI   -1
+
+/* Default value of init_ql string */
+#define DEFAULT_INIT_QL_STR     "NONE"
 
 /* See T_esmc_ql */
 #define ESMC_QL_NET_OPT_1_START   E_esmc_ql_net_opt_1_ePRTC

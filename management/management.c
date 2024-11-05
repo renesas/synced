@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <limits.h>
@@ -219,7 +219,7 @@ static void management_template_notify_sync_current_ql(const char *port_name, T_
 {
   /* This function is a template; the user must implement their own code here or register their own functions using management_init(). */
 
-  pr_info("Current QL for port %s changed to %s (%d); new rank: 0x%06X", port_name, conv_ql_enum_to_str(current_ql), current_ql, rank);
+  pr_info("Port %s: current QL %s (%d), new rank 0x%06X", port_name, conv_ql_enum_to_str(current_ql), current_ql, rank);
 }
 #endif
 

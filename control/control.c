@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <stdlib.h>
@@ -202,7 +202,7 @@ static int control_rx_event_cb(T_esmc_adaptor_rx_event_cb_data *cb_data)
   T_sync_entry *sync_entry;
   T_esmc_ql do_not_use_ql;
   T_esmc_ql old_ql;
-  T_sync_state new_state;
+  T_sync_state state;
   T_alarm_data alarm_data;
 
   os_mutex_lock(&g_control_mutex);
@@ -234,6 +234,7 @@ static int control_rx_event_cb(T_esmc_adaptor_rx_event_cb_data *cb_data)
       break;
     case E_esmc_event_type_rx_timeout:
       new_ql = E_esmc_ql_FAILED;
+      sync_entry->current_num_hops = 0;
       sync_entry->rx_timeout_flag = 1;
       break;
     case E_esmc_event_type_port_link_up:
@@ -241,6 +242,7 @@ static int control_rx_event_cb(T_esmc_adaptor_rx_event_cb_data *cb_data)
       break;
     case E_esmc_event_type_port_link_down:
       new_ql = do_not_use_ql;
+      sync_entry->current_num_hops = 0;
       sync_entry->port_link_down_flag = 1;
       break;
     case E_esmc_event_type_immediate_timing_loop:
@@ -275,37 +277,34 @@ static int control_rx_event_cb(T_esmc_adaptor_rx_event_cb_data *cb_data)
     return 0;
   }
 
-  new_state = sync_entry->state;
-  if(new_ql < do_not_use_ql) {
-    if(g_control_data.wait_to_restore_timer_s == 0) {
-      /* No wait-to-restore timer */
-      new_state = E_sync_state_normal;
-    } else if(old_ql >= do_not_use_ql) {
-      new_state = E_sync_state_wait_to_restore;
+  state = sync_entry->state;
+  if(new_ql < E_esmc_ql_FAILED) {
+    if(state == E_sync_state_wait_to_restore) {
+      /* Continue in wait-to-restore state */
+    } else if((old_ql == E_esmc_ql_FAILED) && (g_control_data.wait_to_restore_timer_s != 0)) {
+      state = E_sync_state_wait_to_restore;
       sync_entry->temporary_state_monotonic_time_ms = os_get_monotonic_milliseconds() + (g_control_data.wait_to_restore_timer_s * 1000);
     } else {
       /* Sync is in normal state (sync was already in normal state or was in hold-off state) */
-      new_state = E_sync_state_normal;
+      state = E_sync_state_normal;
     }
-  } else if(new_ql == E_esmc_ql_FAILED) {
+  } else {
     if((g_control_data.hold_off_timer_ms == 0) || (sync_entry->state == E_sync_state_wait_to_restore)) {
       /* No hold-off timer */
-      new_state = E_sync_state_normal;
+      state = E_sync_state_normal;
     } else if(sync_entry->state == E_sync_state_normal) {
-      new_state = E_sync_state_hold_off;
+      state = E_sync_state_hold_off;
       sync_entry->temporary_state_monotonic_time_ms = os_get_monotonic_milliseconds() + g_control_data.hold_off_timer_ms;
       sync_entry->hold_off_ql = old_ql;
     } else {
       /* Continue in hold-off state */
     }
-  } else {
-    new_state = E_sync_state_normal;
   }
-  sync_entry->state = new_state;
+  sync_entry->state = state;
 
   os_mutex_unlock(&g_control_mutex);
 
-  management_call_notify_sync_current_state_cb(sync_entry->name, new_state);
+  management_call_notify_sync_current_state_cb(sync_entry->name, state);
 
   return 0;
 }

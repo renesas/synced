@@ -18,9 +18,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #ifndef CONFIG_H
@@ -76,6 +76,7 @@ static inline struct option *config_long_options(struct config *cfg) {
 int config_parse_option(struct config *cfg, const char *opt, const char *val);
 
 /* ESMC-related configuration functions */
+int get_default_init_ql(T_esmc_network_option net_opt, T_esmc_ql *ql);
 int config_ql_str_to_enum_conv(T_esmc_network_option net_opt, const char *ql_str, T_esmc_ql *ql);
 
 enum config_parser_result config_get_ranged_int(const char *str_val, int *result, int min, int max);

@@ -13,12 +13,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 2-0-6
-<br>Pipeline ID: 397387
-<br>Commit Hash: 6a4f6beb
+Release Tag: 2-0-7
+<br>Pipeline ID: 422266
+<br>Commit Hash: 47d8d0e1
 ***
 
-# `synced` 2-0-6 README
+# `synced` 2-0-7 README
 
 `synced` is a user space Synchronous Ethernet (Sync-E) stack for the Linux operating system.
 
@@ -29,6 +29,10 @@ when using a Markdown-compatible editor.
 Public License. See the file COPYING for the license terms.
 
 `synced` can be downloaded from https://github.com/renesas/synced.
+
+If you encounter any issues, have questions, or find bugs, please raise an issue through the GitHub
+Issues interface. If you have a fix or improvement, feel free to submit a pull request. All
+contributions are welcome.
 
 ---
 
@@ -95,9 +99,9 @@ new value cannot exceed 64.
 **Sync-E Clock Ports**, **Sync-E Monitoring Ports**, and **Sync-E TX Only Ports** are ESMC-capable,
 i.e., they can execute the ESMC protocol and send and/or receive ESMC protocol data units (PDUs).
 An **External Clock Port** is not ESMC-capable. The number of ESMC-capable ports is limited by the
-compile-time macro **ESMC_MAX_NUM_OF_PORTS**, defined in the esmc/esmc_adaptor/esmc_adaptor.h header
-file and set to 32 by default. The user may change this value, but it cannot exceed the value of
-the compile-time macro **MAX_NUM_OF_SYNC_ENTRIES**.
+compile-time macro **ESMC_MAX_NUMBER_OF_PORTS**, defined in the esmc/esmc_adaptor/esmc_adaptor.h
+header file and set to 32 by default. The user may change this value, but it cannot exceed the
+value of the compile-time macro **MAX_NUM_OF_SYNC_ENTRIES**.
 
 `synced` supports a mode called **No QL Mode**. If enabled, the clock selection process is based on
 priority. However, only valid clocks participate in the selection process. For example,
@@ -439,7 +443,7 @@ build arguments. **CROSS_COMPILE** can be used to set the compiler-compiler.
     - Default: 0 (disabled)
     - Range: 0-1
   - Initial QL **[init_ql]**
-    - Default: "FAILED" (QL-FAILED)
+    - Default: depends on network option: 1-"DNU"; 2-"DUS"; 3-"SEC"
     - Range: same as local oscillator quality level
   - TX bundle number **[tx_bundle_num]**
     - Default: -1 (disabled/no bundle)

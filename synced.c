@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-6
-* Pipeline ID: 397387
-* Commit Hash: 6a4f6beb
+* Release Tag: 2-0-7
+* Pipeline ID: 422266
+* Commit Hash: 47d8d0e1
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -50,9 +50,9 @@
 #error __linux__ is not defined!
 #endif /* __linux__ */
 
-#define VERSION_ID    "2.0.6"
-#define PIPELINE_ID   "397387"
-#define COMMIT_ID     "6a4f6beb"
+#define VERSION_ID    "2.0.7"
+#define PIPELINE_ID   "422266"
+#define COMMIT_ID     "47d8d0e1"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 
@@ -236,26 +236,30 @@ static int get_port_info(struct config *cfg, T_esmc_network_option net_opt, int 
     interface_config_type(iface, sync_type);
 
     ql_str = config_get_string(cfg, port_name, "init_ql");
+    if(get_default_init_ql(net_opt, &ql) < 0) {
+      pr_err("Port %s cannot determine the default initial QL value", port_name);
+      return -1;
+    }
 
     if(sync_type == E_sync_type_tx_only) {
-      if(strcmp(ql_str, "FAILED")) {
+      if(strcmp(ql_str, DEFAULT_INIT_QL_STR)) {
         pr_err("Port %s does not support initial QL", port_name);
         return -1;
       }
     } else if(no_ql_en) {
-      if(strcmp(ql_str, "FAILED")) {
+      if(strcmp(ql_str, DEFAULT_INIT_QL_STR)) {
         pr_err("Port %s does not support initial QL because no QL mode is enabled", port_name);
         return -1;
       }
     } else {
-      if(!strcmp(ql_str, "FAILED")) {
-        pr_warning("Port %s initial QL set to QL-FAILED", port_name);
+      if(!strcmp(ql_str, DEFAULT_INIT_QL_STR)) {
+        pr_warning("Port %s initial QL set to default value %s", port_name, conv_ql_enum_to_str(ql));
+      } else {
+        if(config_ql_str_to_enum_conv(net_opt, ql_str, &ql) < 0) {
+          pr_err("Port %s initial QL (QL-%s) incompatible with network option %d", port_name, ql_str, net_opt);
+          return -1;
+        }
       }
-    }
-
-    if(config_ql_str_to_enum_conv(net_opt, ql_str, &ql) < 0) {
-      pr_err("Port %s initial QL (QL-%s) incompatible with network option %d", port_name, ql_str, net_opt);
-      return -1;
     }
     interface_config_ql(iface, ql);
 
