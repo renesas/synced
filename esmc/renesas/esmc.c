@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -739,7 +739,7 @@ int esmc_create_tx_ports(T_tx_port_info const *tx_port, int num_tx_ports)
     name = tx_port->name;
     port_num = tx_port->port_num;
 
-    tx_p = port_create_tx(tx_port);
+    tx_p = port_tx_create(tx_port);
     if(!tx_p) {
       pr_err("Failed to create port %s (port number: %d) TX", name, port_num);
       return -1;
@@ -784,7 +784,7 @@ int esmc_create_rx_ports(T_rx_port_info const *rx_port, int num_rx_ports)
     name = rx_port->name;
     port_num = rx_port->port_num;
 
-    rx_p = port_create_rx(rx_port);
+    rx_p = port_rx_create(rx_port);
     if(!rx_p) {
       pr_err("Failed to create port %s (port number: %d) RX", name, port_num);
       return -1;
@@ -826,7 +826,7 @@ int esmc_init_stack(T_esmc_network_option net_opt, T_esmc_ql init_ql, T_esmc_ql 
   esmc->best_ext_ql_tlv_data.num_cascaded_eEEC = 1;
   esmc->best_ext_ql_tlv_data.num_cascaded_EEC = 0;
   esmc->best_port_num = INVALID_PORT_NUM;
-  esmc->port_tx_bundle_info.num_ports = 0;
+  esmc->port_tx_bundle_info.entries = 0;
 
   if(os_mutex_init(&esmc->best_ql_mutex) < 0) {
     goto err;
@@ -862,14 +862,7 @@ int esmc_init_tx_ports(void)
   }
 
   LIST_FOREACH(tx_p, &esmc->tx_ports, list) {
-    if(port_init_tx(tx_p) < 0) {
-      pr_err("Failed to initialize TX port");
-      port_destroy_tx(tx_p);
-      LIST_REMOVE(tx_p, list);
-      free(tx_p);
-      goto err;
-    }
-
+    port_tx_init(tx_p);
     count++;
   }
 
@@ -906,14 +899,7 @@ int esmc_init_rx_ports(void)
   }
 
   LIST_FOREACH(rx_p, &esmc->rx_ports, list) {
-    if(port_init_rx(rx_p) < 0) {
-      pr_err("Failed to initialize RX port");
-      port_destroy_rx(rx_p);
-      LIST_REMOVE(rx_p, list);
-      free(rx_p);
-      goto err;
-    }
-
+    port_rx_init(rx_p);
     count++;
   }
 
@@ -952,14 +938,14 @@ int esmc_check_init(void)
   for (i = 0; i < num_tries; i++) {
     tx_count = 0;
     LIST_FOREACH(tx_p, &esmc->tx_ports, list) {
-      if(port_check_tx(tx_p) == 0) {
+      if(port_tx_check(tx_p) == 0) {
         tx_count++;
       }
     } 
 
     rx_count = 0;
     LIST_FOREACH(rx_p, &esmc->rx_ports, list) {
-      if(port_check_rx(rx_p) == 0) {
+      if(port_rx_check(rx_p) == 0) {
         rx_count++;
       }
     }
@@ -993,8 +979,16 @@ void esmc_destroy_tx_ports(void)
   T_port_tx_data *tx_p;
   T_port_tx_data *tmp_tx_p;
 
+  LIST_FOREACH(tx_p, &esmc->tx_ports, list) {
+    port_tx_stop(tx_p);
+  }
+
+  LIST_FOREACH(tx_p, &esmc->tx_ports, list) {
+    port_tx_wait_stop(tx_p);
+    port_tx_close(tx_p);
+  }
+
   LIST_FOREACH_SAFE(tx_p, &esmc->tx_ports, list, tmp_tx_p) {
-    port_destroy_tx(tx_p);
     LIST_REMOVE(tx_p, list);
     free(tx_p);
   }
@@ -1008,8 +1002,16 @@ void esmc_destroy_rx_ports(void)
   T_port_rx_data *rx_p;
   T_port_rx_data *tmp_rx_p;
 
+  LIST_FOREACH(rx_p, &esmc->rx_ports, list) {
+    port_rx_stop(rx_p);
+  }
+
+  LIST_FOREACH(rx_p, &esmc->rx_ports, list) {
+    port_rx_wait_stop(rx_p);
+    port_rx_close(rx_p);
+  }
+
   LIST_FOREACH_SAFE(rx_p, &esmc->rx_ports, list, tmp_rx_p) {
-    port_destroy_rx(rx_p);
     LIST_REMOVE(rx_p, list);
     free(rx_p);
   }
@@ -1022,7 +1024,6 @@ void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, T_port_tx_bun
   T_esmc *esmc = &g_esmc;
 
   T_port_rx_data *rx_p;
-  T_port_rx_data *tmp_rx_p;
 
   os_mutex_lock(&esmc->best_ql_mutex);
   esmc->best_ql = best_ql;
@@ -1038,7 +1039,7 @@ void esmc_set_best_ql(T_esmc_ql best_ql, T_port_num best_port_num, T_port_tx_bun
     memset(esmc->best_ext_ql_tlv_data.originator_clock_id, 0, ESMC_PDU_EXT_QL_TLV_SYNCE_CLOCK_ID_LEN);
   } else {
     /* Best clock is Sync-E clock */
-    LIST_FOREACH_SAFE(rx_p, &esmc->rx_ports, list, tmp_rx_p) {
+    LIST_FOREACH(rx_p, &esmc->rx_ports, list) {
       if(port_get_rx_ext_ql_tlv_data(rx_p, best_port_num, &esmc->best_ext_ql_tlv_data) == 1) {
         break;
       }
@@ -1097,12 +1098,12 @@ int esmc_compose_pdu(T_esmc_pdu *msg, T_esmc_pdu_type msg_type, unsigned char sr
   unsigned char e_ssm_code;
   int off;
 
-  int i;
+  int entry;
 
   os_mutex_lock(&esmc->best_ql_mutex);
   best_ql = esmc->best_ql;
-  for(i = 0; i < esmc->port_tx_bundle_info.num_ports; i++) {
-    if(port_num == esmc->port_tx_bundle_info.port_nums[i]) {
+  for(entry = 0; entry < esmc->port_tx_bundle_info.entries; entry++) {
+    if(port_num == esmc->port_tx_bundle_info.port_nums[entry]) {
       best_ql = do_not_use_ql;
       break;
     }

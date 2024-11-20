@@ -16,9 +16,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -50,9 +50,9 @@
 #error __linux__ is not defined!
 #endif /* __linux__ */
 
-#define VERSION_ID    "2.0.7"
-#define PIPELINE_ID   "422266"
-#define COMMIT_ID     "47d8d0e1"
+#define VERSION_ID    "2.0.8"
+#define PIPELINE_ID   "426834"
+#define COMMIT_ID     "62f27b58"
 
 #define MAIN_LOOP_INTERVAL_MS   100
 

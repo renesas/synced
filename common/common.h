@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #ifndef COMMON_H
@@ -45,7 +45,7 @@
 
 #define MAX_CLK_ID_LEN   8
 
-#define MAX_NUM_OF_SYNC_ENTRIES   64
+#define MAX_NUM_OF_SYNC_ENTRIES   128
 
 /* Maximum number of clocks going into device (includes external clock ports) */
 #define MAX_NUM_OF_CLOCKS   32

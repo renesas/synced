@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include "esmc.h"
@@ -82,6 +82,15 @@ static int get_sync_idx_from_tx_port_num(T_port_num tx_port_num)
   }
 
   return INVALID_SYNC_IDX;
+}
+
+static T_port_num get_tx_port_num_from_sync_idx(int sync_idx)
+{
+  if ((sync_idx >= 0) && (sync_idx < MAX_NUM_OF_SYNC_ENTRIES)) {
+    return g_esmc_sync_idx_to_tx_port_num_map[sync_idx];
+  }
+
+  return INVALID_PORT_NUM;
 }
 
 static T_port_num get_rx_port_num_from_sync_idx(int sync_idx)
@@ -277,39 +286,34 @@ int esmc_adaptor_start(void)
   return esmc_check_init();
 }
 
-int esmc_adaptor_set_tx_ql(T_esmc_ql ql, int best_sync_idx, unsigned long long sync_tx_bundle_bitmap)
+int esmc_adaptor_set_tx_ql(T_esmc_ql ql, int best_sync_idx, T_sync_tx_bundle_info *sync_tx_bundle_info)
 {
   T_port_num best_port_num;
-  T_port_num rx_port_num;
+  T_port_num tx_port_num;
   int sync_idx;
-  T_port_tx_bundle_info port_tx_bundle_info = {0};
-  int num_ports;
+  T_port_tx_bundle_info port_tx_bundle_info;
+  int entry;
+
+  port_tx_bundle_info.entries = 0;
 
   if(best_sync_idx == INVALID_SYNC_IDX) {
     esmc_set_best_ql(ql, INVALID_PORT_NUM, &port_tx_bundle_info);
     return 0;
   }
 
-  /* Find best port number */
-  best_port_num = get_rx_port_num_from_sync_idx(best_sync_idx);
-
-  /* Convert the sync bitmap into port TX bundle info */
-  sync_idx = 0;
-  while(sync_tx_bundle_bitmap != 0) {
-    if(sync_tx_bundle_bitmap & 1) {
-      rx_port_num = get_rx_port_num_from_sync_idx(sync_idx);
-      if(rx_port_num != INVALID_PORT_NUM) {
-        num_ports = port_tx_bundle_info.num_ports;
-        if(num_ports < ESMC_MAX_NUMBER_OF_PORTS) {
-          port_tx_bundle_info.port_nums[num_ports] = rx_port_num;
-          port_tx_bundle_info.num_ports = num_ports + 1;
-        }
-      }
+  /* Convert the sync TX bundle info to port TX bundle info */
+  for(entry = 0; entry < sync_tx_bundle_info->entries; entry++) {
+    sync_idx = sync_tx_bundle_info->sync_indices[entry];
+    tx_port_num = get_tx_port_num_from_sync_idx(sync_idx);
+    if(tx_port_num != INVALID_PORT_NUM) {
+      port_tx_bundle_info.port_nums[port_tx_bundle_info.entries] = tx_port_num;
+      port_tx_bundle_info.entries++;
     }
-    sync_tx_bundle_bitmap >>= 1;
-    sync_idx++;
   }
 
+  /* Find best port number */
+  best_port_num = get_rx_port_num_from_sync_idx(best_sync_idx);
+  /* Set the best QL */
   esmc_set_best_ql(ql, best_port_num, &port_tx_bundle_info);
 
   return 0;

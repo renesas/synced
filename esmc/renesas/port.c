@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <errno.h>
@@ -43,7 +43,8 @@
 #include "../../common/types.h"
 
 
-#define PORT_MAX_NAME_LEN   INTERFACE_MAX_NAME_LEN
+#define PORT_MAX_NAME_LEN               INTERFACE_MAX_NAME_LEN
+#define PORT_THREAD_WAIT_MICROSECONDS   2000000
 
 typedef enum {
   E_port_type_tx,
@@ -165,12 +166,7 @@ static int port_open_rx(const char *name, T_port_num port_num, struct sockaddr_l
   return fd;
 }
 
-static void port_close_tx(int fd)
-{
-  raw_socket_close(fd);
-}
-
-static void port_close_rx(int fd)
+static void port_close(int fd)
 {
   raw_socket_close(fd);
 }
@@ -184,39 +180,39 @@ static const char *conv_port_thread_type_enum_to_str(T_port_thread_type thread_t
   return g_port_thread_type_enum_to_str[thread_type];
 }
 
-static int port_thread_start_wait(T_port_thread_type thread_type, T_port_cmn_thread_data *cmn_thread_data)
+static int port_thread_state_wait(T_port_thread_state *thread_state, T_port_thread_state expected_state, unsigned int timeout_us)
 {
-  const int timeout_us = 2000000;
   const int poll_interval_us = 50000;
   int count = (timeout_us / poll_interval_us) + 1;
-  volatile T_port_thread_state *thread_state = &cmn_thread_data->thread_state;
-
-  *thread_state = E_port_thread_state_starting;
 
   while(count--) {
-    if(*thread_state == E_port_thread_state_started) {
-      pr_debug("Started %s thread for port %s (port number: %d)", conv_port_thread_type_enum_to_str(thread_type), cmn_thread_data->name, cmn_thread_data->port_num);
+    if(*(volatile T_port_thread_state *)thread_state == expected_state) {
       return 0;
     }
     usleep(poll_interval_us);
+  }
+  return -1;
+}
+
+static int port_thread_start_wait(T_port_thread_type thread_type, T_port_cmn_thread_data *cmn_thread_data)
+{
+  T_port_thread_state *thread_state = &cmn_thread_data->thread_state;
+
+  *thread_state = E_port_thread_state_starting;
+
+  if(port_thread_state_wait(thread_state, E_port_thread_state_started, PORT_THREAD_WAIT_MICROSECONDS) == 0) {
+    pr_debug("Started %s thread for port %s (port number: %d)", conv_port_thread_type_enum_to_str(thread_type), cmn_thread_data->name, cmn_thread_data->port_num);
+    return 0;
   }
 
   pr_err("Failed to start %s thread for port %s (port number: %d)", conv_port_thread_type_enum_to_str(thread_type), cmn_thread_data->name, cmn_thread_data->port_num);
   return -1;
 }
 
-static void port_thread_stop_wait(T_port_cmn_thread_data *cmn_thread_data)
+static void port_thread_stop(T_port_cmn_thread_data *cmn_thread_data)
 {
-  const int timeout_us = 2000000;
-  const int poll_interval_us = 50000;
-  int count = (timeout_us / poll_interval_us) + 1;
-
   if(cmn_thread_data->thread_state == E_port_thread_state_started) {
     cmn_thread_data->thread_state = E_port_thread_state_stopping;
-  }
-
-  while(count-- && (cmn_thread_data->thread_state != E_port_thread_state_stopped)) {
-    usleep(poll_interval_us);
   }
 }
 
@@ -612,7 +608,7 @@ err:
 
 /* Global functions */
 
-T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port)
+T_port_tx_data *port_tx_create(T_tx_port_info const *tx_port)
 {
   T_port_tx_data *tx_p;
   struct sockaddr_ll mac_addr;
@@ -628,7 +624,7 @@ T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port)
 
   fd = port_open_tx(tx_port->name, tx_port->port_num, &mac_addr);
   if(fd == UNINITIALIZED_FD) {
-    port_destroy_tx(tx_p);
+    free(tx_p);
     return NULL;
   }
 
@@ -639,21 +635,25 @@ T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port)
   tx_p->thread_data.cmn_thread_data.fd = fd;
 
   if(os_thread_create(&tx_p->thread_data.cmn_thread_data.thread_id, port_tx_thread, &tx_p->thread_data) < 0) {
-    port_destroy_tx(tx_p);
+    port_close(fd);
+    free(tx_p);
     return NULL;
   }
 
   tx_p->state = E_port_state_created;
 
   if(port_thread_start_wait(E_port_thread_type_tx, &tx_p->thread_data.cmn_thread_data) < 0) {
-    port_destroy_tx(tx_p);
+    port_tx_stop(tx_p);
+    port_tx_wait_stop(tx_p);
+    port_close(fd);
+    free(tx_p);
     return NULL;
   }
 
   return tx_p;
 }
 
-T_port_rx_data *port_create_rx(T_rx_port_info const *rx_port)
+T_port_rx_data *port_rx_create(T_rx_port_info const *rx_port)
 {
   T_port_rx_data *rx_p;
   struct sockaddr_ll mac_addr;
@@ -669,7 +669,7 @@ T_port_rx_data *port_create_rx(T_rx_port_info const *rx_port)
 
   fd = port_open_rx(rx_port->name, rx_port->port_num, &mac_addr);
   if(fd == UNINITIALIZED_FD) {
-    port_destroy_rx(rx_p);
+    free(rx_p);
     return NULL;
   }
 
@@ -679,41 +679,41 @@ T_port_rx_data *port_create_rx(T_rx_port_info const *rx_port)
   rx_p->thread_data.cmn_thread_data.fd = fd;
 
   if(os_thread_create(&rx_p->thread_data.cmn_thread_data.thread_id, port_rx_thread, &rx_p->thread_data) < 0) {
-    port_destroy_rx(rx_p);
+    port_close(fd);
+    free(rx_p);
     return NULL;
   }
 
   rx_p->state = E_port_state_created;
 
   if(port_thread_start_wait(E_port_thread_type_rx, &rx_p->thread_data.cmn_thread_data) < 0) {
-    port_destroy_rx(rx_p);
+    port_rx_stop(rx_p);
+    port_rx_wait_stop(rx_p);
+    port_close(fd);
+    free(rx_p);
     return NULL;
   }
 
   return rx_p;
 }
 
-int port_init_tx(T_port_tx_data *tx_p)
+void port_tx_init(T_port_tx_data *tx_p)
 {
   tx_p->state = E_port_state_initialized;
 
   tx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_eEEC = 1;
   tx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_EEC = 0;
-
-  return 0;
 }
 
-int port_init_rx(T_port_rx_data *rx_p)
+void port_rx_init(T_port_rx_data *rx_p)
 {
   rx_p->state = E_port_state_initialized;
 
   rx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_eEEC = 1;
   rx_p->thread_data.cmn_thread_data.ext_ql_tlv.num_cascaded_EEC = 0;
-
-  return 0;
 }
 
-int port_check_tx(T_port_tx_data *tx_p)
+int port_tx_check(T_port_tx_data *tx_p)
 {
   if(tx_p->state < E_port_state_initialized) {
     goto err;
@@ -731,7 +731,7 @@ err:
   return -1;
 }
 
-int port_check_rx(T_port_rx_data *rx_p)
+int port_rx_check(T_port_rx_data *rx_p)
 {
   if(rx_p->state < E_port_state_initialized) {
     goto err;
@@ -778,20 +778,54 @@ int port_get_rx_ext_ql_tlv_data(T_port_rx_data *rx_p, T_port_num best_port_num, 
   return 0;
 }
 
-void port_destroy_tx(T_port_tx_data *tx_p)
+void port_tx_stop(T_port_tx_data *tx_p)
 {
-  port_thread_stop_wait(&tx_p->thread_data.cmn_thread_data);
-  port_close_tx(tx_p->thread_data.cmn_thread_data.fd);
+  T_port_cmn_thread_data *cmn_thread_data = &tx_p->thread_data.cmn_thread_data;
 
-  tx_p->state = E_port_state_unknown;
-  tx_p->thread_data.cmn_thread_data.fd = UNINITIALIZED_FD;
+  port_thread_stop(cmn_thread_data);
 }
 
-void port_destroy_rx(T_port_rx_data *rx_p)
+void port_tx_wait_stop(T_port_tx_data *tx_p)
 {
-  port_thread_stop_wait(&rx_p->thread_data.cmn_thread_data);
-  port_close_rx(rx_p->thread_data.cmn_thread_data.fd);
+  T_port_cmn_thread_data *cmn_thread_data = &tx_p->thread_data.cmn_thread_data;
 
+  port_thread_state_wait(&cmn_thread_data->thread_state, E_port_thread_state_stopped, PORT_THREAD_WAIT_MICROSECONDS);
+}
+
+void port_tx_close(T_port_tx_data *tx_p)
+{
+  T_port_cmn_thread_data *cmn_thread_data = &tx_p->thread_data.cmn_thread_data;
+
+  if(cmn_thread_data->fd != UNINITIALIZED_FD) {
+    port_close(cmn_thread_data->fd);
+  }
+
+  cmn_thread_data->fd = UNINITIALIZED_FD;
+  tx_p->state = E_port_state_unknown;
+}
+
+void port_rx_stop(T_port_rx_data *rx_p)
+{
+  T_port_cmn_thread_data *cmn_thread_data = &rx_p->thread_data.cmn_thread_data;
+
+  port_thread_stop(cmn_thread_data);
+}
+
+void port_rx_wait_stop(T_port_rx_data *rx_p)
+{
+  T_port_cmn_thread_data *cmn_thread_data = &rx_p->thread_data.cmn_thread_data;
+
+  port_thread_state_wait(&cmn_thread_data->thread_state, E_port_thread_state_stopped, PORT_THREAD_WAIT_MICROSECONDS);
+}
+
+void port_rx_close(T_port_rx_data *rx_p)
+{
+  T_port_cmn_thread_data *cmn_thread_data = &rx_p->thread_data.cmn_thread_data;
+
+  if (cmn_thread_data->fd != UNINITIALIZED_FD) {
+    port_close(cmn_thread_data->fd);
+  }
+
+  cmn_thread_data->fd = UNINITIALIZED_FD;
   rx_p->state = E_port_state_unknown;
-  rx_p->thread_data.cmn_thread_data.fd = UNINITIALIZED_FD;
 }

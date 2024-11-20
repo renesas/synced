@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <arpa/inet.h>
@@ -258,7 +258,7 @@ static void mng_if_thread_start_wait(T_mng_if_thread_state *state)
   }
 
   time_diff_ms = os_get_monotonic_milliseconds() - start_time_ms;
-  pr_info("Mangement interface started in %d milliseconds", time_diff_ms);
+  pr_info("Management interface started in %d milliseconds", time_diff_ms);
 }
 
 static void mng_if_thread_stop_wait(T_mng_if_thread_state *state)
@@ -279,7 +279,7 @@ static void mng_if_thread_stop_wait(T_mng_if_thread_state *state)
   }
 
   time_diff_ms = os_get_monotonic_milliseconds() - stop_time_ms;
-  pr_info("Mangement interface stopped in %d milliseconds", time_diff_ms);
+  pr_info("Management interface stopped in %d milliseconds", time_diff_ms);
 }
 
 /* Global functions */

@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <stdio.h>
@@ -313,7 +313,7 @@ void mac_addr_arr_to_str(struct sockaddr_ll *mac_addr, char mac_addr_str[MAX_MAC
 {
   const char *format = "%02X:%02X:%02X:%02X:%02X:%02X";
   snprintf(mac_addr_str,
-           MAX_MAC_ADDR_STR_LEN - 1,
+           MAX_MAC_ADDR_STR_LEN,
            format,
            mac_addr->sll_addr[0], mac_addr->sll_addr[1], mac_addr->sll_addr[2],
            mac_addr->sll_addr[3], mac_addr->sll_addr[4], mac_addr->sll_addr[5]);

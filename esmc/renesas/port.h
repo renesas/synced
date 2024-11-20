@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #ifndef PORT_H
@@ -39,18 +39,24 @@ typedef struct {
 typedef struct T_port_tx_data T_port_tx_data;
 typedef struct T_port_rx_data T_port_rx_data;
 
-T_port_tx_data *port_create_tx(T_tx_port_info const *tx_port);
-T_port_rx_data *port_create_rx(T_rx_port_info const *rx_port);
+T_port_tx_data *port_tx_create(T_tx_port_info const *tx_port);
+T_port_rx_data *port_rx_create(T_rx_port_info const *rx_port);
 
-int port_init_tx(T_port_tx_data *tx_p);
-int port_init_rx(T_port_rx_data *rx_p);
+void port_tx_init(T_port_tx_data *tx_p);
+void port_rx_init(T_port_rx_data *rx_p);
 
-int port_check_tx(T_port_tx_data *tx_p);
-int port_check_rx(T_port_rx_data *rx_p);
+int port_tx_check(T_port_tx_data *tx_p);
+int port_rx_check(T_port_rx_data *rx_p);
 
 int port_get_rx_ext_ql_tlv_data(T_port_rx_data *rx_p, T_port_num best_port_num, T_port_ext_ql_tlv_data *best_ext_ql_tlv_data);
 
-void port_destroy_tx(T_port_tx_data *tx_p);
-void port_destroy_rx(T_port_rx_data *rx_p);
+void port_tx_stop(T_port_tx_data *tx_p);
+void port_tx_wait_stop(T_port_tx_data *tx_p);
+void port_tx_close(T_port_tx_data *tx_p);
+
+void port_rx_stop(T_port_rx_data *rx_p);
+void port_rx_wait_stop(T_port_rx_data *rx_p);
+void port_rx_close(T_port_rx_data *rx_p);
+
 
 #endif /* PORT_H */

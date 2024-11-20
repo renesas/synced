@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <string.h>
@@ -72,7 +72,7 @@ void monitor_determine_ql(void)
   T_esmc_ql old_ql;
   int sync_idx;
   int old_sync_idx;
-  unsigned long long tx_bundle_bitmap;
+  T_sync_tx_bundle_info sync_tx_bundle_info;
   T_alarm_data alarm_data;
   char port_name[INTERFACE_MAX_NAME_LEN];
 
@@ -208,8 +208,8 @@ void monitor_determine_ql(void)
 
   if((ql != old_ql) || (clk_idx != old_clk_idx) || (sync_idx != old_sync_idx)) {
     /* If QL, clock index or sync index has changed, then update ESMC TX QL */
-    tx_bundle_bitmap = control_get_tx_bundle_bitmap(sync_idx);
-    esmc_adaptor_set_tx_ql(ql, sync_idx, tx_bundle_bitmap);
+    control_get_tx_bundle_info(sync_idx, &sync_tx_bundle_info);
+    esmc_adaptor_set_tx_ql(ql, sync_idx, &sync_tx_bundle_info);
   }
 
   if(synce_dpll_state != old_synce_dpll_state) {

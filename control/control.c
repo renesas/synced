@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <stdlib.h>
@@ -28,8 +28,6 @@
 #include "../common/print.h"
 #include "../common/os.h"
 #include "../device/device_adaptor/device_adaptor.h"
-#include "../esmc/esmc_adaptor/esmc_adaptor.h"
-#include "../management/management.h"
 
 #define MAX_NUMBER_HOPS   255
 
@@ -966,15 +964,16 @@ int control_set_pri(const char *port_name, int pri)
   return 0;
 }
 
-unsigned long long control_get_tx_bundle_bitmap(int sync_idx)
+void control_get_tx_bundle_info(int sync_idx, T_sync_tx_bundle_info *sync_tx_bundle_info)
 {
-  unsigned long long tx_bundle_bitmap;
   int tx_bundle_num;
   int i;
   T_sync_entry *sync_entry;
 
+  sync_tx_bundle_info->entries = 0;
+
   if(sync_idx == INVALID_SYNC_IDX) {
-    return 0;
+    return;
   }
 
   os_mutex_lock(&g_control_mutex);
@@ -982,25 +981,24 @@ unsigned long long control_get_tx_bundle_bitmap(int sync_idx)
 
   if(sync_entry->type == E_sync_type_external) {
     os_mutex_unlock(&g_control_mutex);
-    return 0;
+    return;
   }
 
   tx_bundle_num = sync_entry->tx_bundle_num;
   if(tx_bundle_num == NO_TX_BUNDLE_NUM) {
-    tx_bundle_bitmap = (unsigned long long)1 << sync_idx;
+    sync_tx_bundle_info->sync_indices[0] = sync_idx;
+    sync_tx_bundle_info->entries = 1;
   } else {
-    tx_bundle_bitmap = 0;
     for(i = 0; i < g_control_data.num_syncs; i++) {
       sync_entry = &g_control_data.sync_table[i];
       if(tx_bundle_num == sync_entry->tx_bundle_num) {
-        tx_bundle_bitmap |= (unsigned long long)1 << i;
+        sync_tx_bundle_info->sync_indices[sync_tx_bundle_info->entries] = i;
+        sync_tx_bundle_info->entries++;
       }
     }
   }
 
   os_mutex_unlock(&g_control_mutex);
-
-  return tx_bundle_bitmap;
 }
 
 void control_deinit(void)

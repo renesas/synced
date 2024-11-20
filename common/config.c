@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #include <ctype.h>
@@ -253,7 +253,7 @@ static struct config_item g_config_table[] = {
   GLOB_ITEM_INT("mng_if_port_num", 2400, 1024, UINT16_MAX),
 
   /* Interface (port) variables */
-  PORT_ITEM_INT("clk_idx", MISSING_CLK_IDX, 0, 15), /* Default value is MISSING_CLK_IDX, which means Sync-E monitoring port */
+  PORT_ITEM_INT("clk_idx", MISSING_CLK_IDX, 0, MAX_NUM_OF_CLOCKS - 1), /* Default value is MISSING_CLK_IDX, which means Tx-only or Sync-E monitoring port */
   PORT_ITEM_INT("pri", NO_PRI, 0, 255),
   PORT_ITEM_STR("init_ql", DEFAULT_INIT_QL_STR),
   PORT_ITEM_INT("tx_en", 0, 0, 1),
