@@ -13,12 +13,12 @@
 <br>with this program; if not, write to the Free Software Foundation, Inc.,
 <br>51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ***
-Release Tag: 2-0-7
-<br>Pipeline ID: 422266
-<br>Commit Hash: 47d8d0e1
+Release Tag: 2-0-8
+<br>Pipeline ID: 426834
+<br>Commit Hash: 62f27b58
 ***
 
-# `synced` 2-0-7 README
+# `synced` 2-0-8 README
 
 `synced` is a user space Synchronous Ethernet (Sync-E) stack for the Linux operating system.
 
@@ -428,11 +428,11 @@ build arguments. **CROSS_COMPILE** can be used to set the compiler-compiler.
   - Name **[name]**
     - Maximum 16 characters in length, including the NULL character
   - Clock index **[clk_idx]**
-    - Default: 255 (255 indicates **Sync-E Monitoring Port**)
-    - Range: 0-15
+    - Default: -1 (-1 indicates **Sync-E TX Only Port** or **Sync-E Monitoring Port**)
+    - Range: 0-31
     - Description:
-      - Do not specify a clock index for **Sync-E Monitoring Ports**, i.e., the clock
-        index will be set to 255 internally)
+      - Do not specify a clock index for **Sync-E TX Only Ports** and **Sync-E Monitoring Ports**.
+        The clock index will be set to -1 internally.
   - Priority **[pri]**
     - Default: 255
     - Range: 0-255 (highest to lowest)

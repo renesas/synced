@@ -15,15 +15,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #ifndef CONTROL_H
 #define CONTROL_H
 
 #include "sync.h"
+#include "../esmc/esmc_adaptor/esmc_adaptor.h"
 #include "../management/management.h"
 
 typedef struct {
@@ -65,7 +66,7 @@ int control_get_sync_info_by_name(const char *port_name, T_management_sync_info 
 int control_clear_synce_clk_wtr_timer(const char *port_name);
 int control_update_sync_table_entry_clk_idx(const char *new_port_name, int clk_idx);
 int control_set_pri(const char *port_name, int pri);
-unsigned long long control_get_tx_bundle_bitmap(int sync_idx);
+void control_get_tx_bundle_info(int sync_idx, T_sync_tx_bundle_info *sync_tx_bundle_info);
 void control_deinit(void);
 
 #endif /* CONTROL_H */

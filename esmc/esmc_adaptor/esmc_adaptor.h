@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #ifndef ESMC_ADAPTOR_H
@@ -28,7 +28,7 @@
 
 #include "../../common/types.h"
 
-#define ESMC_MAX_NUMBER_OF_PORTS   32
+#define ESMC_MAX_NUMBER_OF_PORTS   128
 
 typedef struct {
   const char *name;
@@ -90,12 +90,17 @@ typedef struct {
   } event_data;
 } T_esmc_adaptor_rx_event_cb_data;
 
+typedef struct {
+  int entries;
+  int sync_indices[ESMC_MAX_NUMBER_OF_PORTS];
+} T_sync_tx_bundle_info;
+
 typedef int (*T_esmc_adaptor_tx_event_cb)(T_esmc_adaptor_tx_event_cb_data *cb_data);
 typedef int (*T_esmc_adaptor_rx_event_cb)(T_esmc_adaptor_rx_event_cb_data *cb_data);
 
 int esmc_adaptor_init(T_esmc_config *config);
 int esmc_adaptor_start(void);
-int esmc_adaptor_set_tx_ql(T_esmc_ql ql, int best_sync_idx, unsigned long long sync_tx_bundle_bitmap);
+int esmc_adaptor_set_tx_ql(T_esmc_ql ql, int best_sync_idx, T_sync_tx_bundle_info *sync_tx_bundle_info);
 int esmc_adaptor_register_tx_cb(T_esmc_adaptor_tx_event_cb cb);
 int esmc_adaptor_register_rx_cb(T_esmc_adaptor_rx_event_cb cb);
 int esmc_adaptor_stop(void);

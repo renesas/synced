@@ -15,9 +15,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 /********************************************************************************************************************
-* Release Tag: 2-0-7
-* Pipeline ID: 422266
-* Commit Hash: 47d8d0e1
+* Release Tag: 2-0-8
+* Pipeline ID: 426834
+* Commit Hash: 62f27b58
 ********************************************************************************************************************/
 
 #ifndef ESMC_H
@@ -179,7 +179,7 @@ typedef enum {
 } T_esmc_state;
 
 typedef struct {
-  int num_ports;
+  int entries;
   T_port_num port_nums[ESMC_MAX_NUMBER_OF_PORTS];
 } T_port_tx_bundle_info;
 
@@ -204,8 +204,6 @@ typedef struct {
 
   T_esmc_state state;
 } T_esmc;
-
-typedef unsigned int T_port_bitmap;
 
 typedef struct {
   T_esmc_event_type event_type;
